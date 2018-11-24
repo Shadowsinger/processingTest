@@ -1,8 +1,14 @@
 A cool 3d thing
 
 #TODO List
-	* Main character and naming
+
 	* Camera switching
+	* Main character gravity, wall interaction
 	* Map generating
-	* Ghosts
+
+	* Collect keys
+	* Scoreboard
+	* Ghost algorithms
+	* Dr Strange portal
+	* Walking on walls
 

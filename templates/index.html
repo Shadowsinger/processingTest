@@ -1,54 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<script type="text/javascript">
-	let x = 10;
-	let mapData;
-	
-	let tx = 0;
-
-	$.get("getData", function(data){
-		mapData = JSON.parse(data);
-		// drawMap(mapData);
-	});
-
-
-	function setup() {
-		createCanvas(500,500,WEBGL);
-	}
-	function draw() {
-		background(200,200,200);
-		fill(200,200,200);
-		rotateX(-0.7);
-		translate(0, 0, -200+tx);
-		rotateX(mouseX/100);
-		rotateY(mouseY/100);
-		if (mapData){
-			drawMap();
-		}
-	}
-	function drawMap(){
-		for (var y = 0; y < mapData.length; y++) {
-			for (var z = 0; z < mapData.length; z++) {
-				for (var x = 0; x < mapData.length; x++) {
-					if (mapData[y][z][x]) {
-						fill((x+1)*113%255, (z+100)*113%255, (y+200)*113%255);
-						push();
-						translate(x*50,y*50,z*50);
-						box(50);
-						pop();
-					}
-				}
-			}
-		}
-	}
-
-	function keyPressed() {
-		if(key=='a'){
-			tx-=10;
-		}
-	}
-
-</script>
+<script src="{{url_for('static', filename='sketch.js')}}"></script>
 
 {% endblock %}
