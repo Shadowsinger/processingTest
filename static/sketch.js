@@ -6,7 +6,7 @@ class User {
 	constructor(){
 		this.pos = createVector(0,0,0);
 	}
-	eatCow(){
+	spawn(){
 		// fill(0,255,242);
 		// strokeWeight(0.1);
 		// sphere(10, 15, 15);
@@ -25,7 +25,7 @@ $.get("getData", function(data){
 });
 
 function initVars() {
-	user=new User();
+	user = new User();
 }
 
 function setup() {
@@ -44,7 +44,7 @@ function draw() {
 		drawMap();
 	}
 
-	user.eatCow();
+	user.spawn();
 
 	handleKeyDown();
 }
