@@ -1,14 +1,21 @@
-A cool 3d thing
+3D Pacman-style game
+
+#Authors
+* Kevin Hsu
+* Alek Westover
+
+#Maps
+* Each map level starts with a line of `---`
+* Lines that start with `#` will not be read
 
 #TODO List
+* Camera switching
+* Main character gravity, wall interaction
+* Map generating
 
-	* Camera switching
-	* Main character gravity, wall interaction
-	* Map generating
-
-	* Collect keys
-	* Scoreboard
-	* Ghost algorithms
-	* Dr Strange portal
-	* Walking on walls
+* Collect keys
+* Scoreboard
+* Ghost algorithms
+* Dr Strange portal
+* Walking on walls
 
