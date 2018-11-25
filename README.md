@@ -1,14 +1,14 @@
 3D Pacman-style game
 
-#Authors
+# Authors
 * Kevin Hsu
 * Alek Westover
 
-#Maps
+# Maps
 * Each map level starts with a line of `---`
 * Lines that start with `#` will not be read
 
-#TODO List
+# Todo List
 * Camera switching
 * Main character gravity, wall interaction
 * Map generating
