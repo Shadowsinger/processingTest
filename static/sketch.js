@@ -5,7 +5,7 @@ let user;
 class User {
 	constructor(){
 		this.pos = createVector(0,0,0);
-		this.cameraUp = createVector(0, 1, 0);
+		this.cameraAngle = createVector(0, 1, 0);
 	}
 	render(){
 		push();
@@ -29,7 +29,7 @@ function initVars() {
 function setup() {
 	createCanvas(500,500,WEBGL);
 	initVars();
-	camera(user.pos.x, user.pos.y, user.pos.z+220, user.pos.x, user.pos.y, user.pos.z, 0, 1, 0);
+	camera(user.pos.x, user.pos.y, user.pos.z+220, user.pos.x, user.pos.y, user.pos.z, user.cameraAngle.x, user.cameraAngle.y, user.cameraAngle.z);
 }
 
 function draw() {
@@ -37,8 +37,8 @@ function draw() {
 	fill(200,200,200);
 	// rotateX(-0.7);
 	// translate(0, 0, -200);
-	rotateX(mouseX/100);
-	rotateY(mouseY/100);
+	// rotateX(mouseX/100);
+	// rotateY(mouseY/100);
 	if (mapData){
 		drawMap();
 	}
@@ -78,7 +78,22 @@ function handleKeyDown(){
 		user.pos.z += 1;
 	}
 
-	camera(user.pos.x, user.pos.y, user.pos.z+220, user.pos.x, user.pos.y, user.pos.z, 0, 1, 0);
+	else if (keyIsDown(87)){		// w
+		user.cameraAngle = createVector();
+	}
+	else if (keyIsDown(65)){		// a
+		user.cameraAngle.x = PI*2;
+	}
+	else if (keyIsDown(83)){		// s
+		user.cameraAngle.x = 0;
+	}
+	else if (keyIsDown(68)){		// d
+		user.cameraAngle.x = -1;
+	}
+
+	
+
+	camera(user.pos.x, user.pos.y, user.pos.z+220, user.pos.x, user.pos.y, user.pos.z, user.cameraAngle.x, user.cameraAngle.y, user.cameraAngle.z);
 }
 
 
