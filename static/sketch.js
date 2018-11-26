@@ -4,12 +4,12 @@ let user;
 
 class User {
 	constructor(){
-		this.pos = createVector(0,0,0);
-		this.cameraAngle = createVector(0, 1, 0);
+		this.pos = createVector(0,0,150);
+		this.cameraAngle = createVector(0, 0, 70);
 	}
 	render(){
 		push();
-		translate(this.pos.x, this.pos.y, this.pos.z+150);
+		translate(this.pos.x, this.pos.y, this.pos.z);
 		stroke(0,0,0);
 		fill(255,0,0);
 		strokeWeight(1);
@@ -29,14 +29,16 @@ function initVars() {
 function setup() {
 	createCanvas(500,500,WEBGL);
 	initVars();
-	camera(user.pos.x, user.pos.y, user.pos.z+220, user.pos.x, user.pos.y, user.pos.z, user.cameraAngle.x, user.cameraAngle.y, user.cameraAngle.z);
+	updateCamera();
+}
+
+function updateCamera() {
+	camera(user.pos.x+user.cameraAngle.x, user.pos.y+user.cameraAngle.y, user.pos.z+user.cameraAngle.z, user.pos.x, user.pos.y, user.pos.z, 0, 1, 0);
 }
 
 function draw() {
 	background(200,200,200);
 	fill(200,200,200);
-	// rotateX(-0.7);
-	// translate(0, 0, -200);
 	// rotateX(mouseX/100);
 	// rotateY(mouseY/100);
 	if (mapData){
@@ -48,6 +50,7 @@ function draw() {
 }
 function drawMap(){
 	fill(0,0,0,30);
+	fill(0,0,0);
 	stroke(0, 255, 242);
 	strokeWeight(4);
 	for (var y = 0; y < mapData.length; y++) {
@@ -64,6 +67,8 @@ function drawMap(){
 	}
 }
 
+let orientation = 0;
+
 function handleKeyDown(){
 	if (keyIsDown(LEFT_ARROW)){
 		user.pos.x -= 1;
@@ -78,22 +83,25 @@ function handleKeyDown(){
 		user.pos.z += 1;
 	}
 
-	else if (keyIsDown(87)){		// w
-		user.cameraAngle = createVector();
+	if (keyIsDown(87)){		// w
+		user.cameraAngle = createVector(0,0,70);
+		orientation = 0;
 	}
 	else if (keyIsDown(65)){		// a
-		user.cameraAngle.x = PI*2;
+		user.cameraAngle = createVector(70,0,0);
+		orientation = 1;
 	}
 	else if (keyIsDown(83)){		// s
-		user.cameraAngle.x = 0;
+		user.cameraAngle = createVector(0,0,-70);
+		orientation = 2;
 	}
 	else if (keyIsDown(68)){		// d
-		user.cameraAngle.x = -1;
+		user.cameraAngle = createVector(-70,0,0);
+		orientation = 3;
 	}
 
-	
-
-	camera(user.pos.x, user.pos.y, user.pos.z+220, user.pos.x, user.pos.y, user.pos.z, user.cameraAngle.x, user.cameraAngle.y, user.cameraAngle.z);
+	updateCamera();
+	// camera(user.pos.x, user.pos.y, user.pos.z+220, user.pos.x, user.pos.y, user.pos.z, user.cameraAngle.x, user.cameraAngle.y, user.cameraAngle.z);
 }
 
 
