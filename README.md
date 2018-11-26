@@ -11,7 +11,7 @@
 # How to Play
 * Arrow keys for horizontal movement
 * \<Space> for vertical movement (to be implemented)
-* WASD for camera angle (absolute) change 
+* WASD for (relative) camera angle change 
 
 # Todo List
 * ~~Camera switching~~

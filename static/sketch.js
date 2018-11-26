@@ -33,6 +33,17 @@ function setup() {
 	updateCamera();
 }
 
+function decideCameraPos() {
+	if (orientation%4 == 0)
+		user.cameraAngle = createVector(0,0,70);
+	else if (orientation%4 == 1)
+		user.cameraAngle = createVector(70,0,0);
+	else if (orientation%4 == 2)
+		user.cameraAngle = createVector(0,0,-70);
+	else if (orientation%4 == 3)
+		user.cameraAngle = createVector(-70,0,0);
+}
+
 function updateCamera() {
 	camera(user.pos.x+user.cameraAngle.x, user.pos.y+user.cameraAngle.y, user.pos.z+user.cameraAngle.z, user.pos.x, user.pos.y, user.pos.z, 0, 1, 0);
 }
@@ -48,8 +59,11 @@ function draw() {
 
 	user.render();
 	handleKeyDown();
+	decideCameraPos();
+	updateCamera();
 }
-function drawMap(){
+
+function drawMap() {
 	fill(0,0,0,30);
 	fill(0,0,0);
 	stroke(0, 255, 242);
@@ -70,64 +84,52 @@ function drawMap(){
 
 function handleKeyDown(){
 	if (keyIsDown(LEFT_ARROW)){
-		if (orientation == 0)
+		if (orientation%4 == 0)
 			user.pos.x -= 1;
-		else if (orientation == 1)
+		else if (orientation%4 == 1)
 			user.pos.z += 1;
-		else if (orientation == 2)
+		else if (orientation%4 == 2)
 			user.pos.x += 1;
-		else if (orientation == 3)
+		else if (orientation%4 == 3)
 			user.pos.z -= 1;
 	}
 	else if (keyIsDown(RIGHT_ARROW)){
-		if (orientation == 0)
+		if (orientation%4 == 0)
 			user.pos.x += 1;
-		else if (orientation == 1)
+		else if (orientation%4 == 1)
 			user.pos.z -= 1;
-		else if (orientation == 2)
+		else if (orientation%4 == 2)
 			user.pos.x -= 1;
-		else if (orientation == 3)
+		else if (orientation%4 == 3)
 			user.pos.z += 1;
 	}
 	else if (keyIsDown(UP_ARROW)){
-		if (orientation == 0)
+		if (orientation%4 == 0)
 			user.pos.z -= 1;
-		else if (orientation == 1)
+		else if (orientation%4 == 1)
 			user.pos.x -= 1;
-		else if (orientation == 2)
+		else if (orientation%4 == 2)
 			user.pos.z += 1;
-		else if (orientation == 3)
+		else if (orientation%4 == 3)
 			user.pos.x += 1;
 	}
 	else if (keyIsDown(DOWN_ARROW)){
-		if (orientation == 0)
+		if (orientation%4 == 0)
 			user.pos.z += 1;
-		else if (orientation == 1)
+		else if (orientation%4 == 1)
 			user.pos.x += 1;
-		else if (orientation == 2)
+		else if (orientation%4 == 2)
 			user.pos.z -= 1;
-		else if (orientation == 3)
+		else if (orientation%4 == 3)
 			user.pos.x -= 1;
 	}
+}
 
-	if (keyIsDown(87)){					// w
-		user.cameraAngle = createVector(0,0,70);
-		orientation = 0;
-	}
-	else if (keyIsDown(65)){		// a
-		user.cameraAngle = createVector(70,0,0);
-		orientation = 1;
-	}
-	else if (keyIsDown(83)){		// s
-		user.cameraAngle = createVector(0,0,-70);
-		orientation = 2;
-	}
-	else if (keyIsDown(68)){		// d
-		user.cameraAngle = createVector(-70,0,0);
-		orientation = 3;
-	}
-
-	updateCamera();
+function keyPressed() {
+	if (keyCode === 65)			// a
+		orientation++;
+	else if (keyCode == 68)	// d
+		orientation+=3;
 }
 
 
