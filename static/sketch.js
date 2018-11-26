@@ -1,6 +1,7 @@
 
 let mapData;
 let user;
+let orientation = 0;
 
 class User {
 	constructor(){
@@ -67,23 +68,49 @@ function drawMap(){
 	}
 }
 
-let orientation = 0;
-
 function handleKeyDown(){
 	if (keyIsDown(LEFT_ARROW)){
-		user.pos.x -= 1;
+		if (orientation == 0)
+			user.pos.x -= 1;
+		else if (orientation == 1)
+			user.pos.z += 1;
+		else if (orientation == 2)
+			user.pos.x += 1;
+		else if (orientation == 3)
+			user.pos.z -= 1;
 	}
 	else if (keyIsDown(RIGHT_ARROW)){
-		user.pos.x += 1;
+		if (orientation == 0)
+			user.pos.x += 1;
+		else if (orientation == 1)
+			user.pos.z -= 1;
+		else if (orientation == 2)
+			user.pos.x -= 1;
+		else if (orientation == 3)
+			user.pos.z += 1;
 	}
 	else if (keyIsDown(UP_ARROW)){
-		user.pos.z -= 1;
+		if (orientation == 0)
+			user.pos.z -= 1;
+		else if (orientation == 1)
+			user.pos.x -= 1;
+		else if (orientation == 2)
+			user.pos.z += 1;
+		else if (orientation == 3)
+			user.pos.x += 1;
 	}
 	else if (keyIsDown(DOWN_ARROW)){
-		user.pos.z += 1;
+		if (orientation == 0)
+			user.pos.z += 1;
+		else if (orientation == 1)
+			user.pos.x += 1;
+		else if (orientation == 2)
+			user.pos.z -= 1;
+		else if (orientation == 3)
+			user.pos.x -= 1;
 	}
 
-	if (keyIsDown(87)){		// w
+	if (keyIsDown(87)){					// w
 		user.cameraAngle = createVector(0,0,70);
 		orientation = 0;
 	}
@@ -101,7 +128,6 @@ function handleKeyDown(){
 	}
 
 	updateCamera();
-	// camera(user.pos.x, user.pos.y, user.pos.z+220, user.pos.x, user.pos.y, user.pos.z, user.cameraAngle.x, user.cameraAngle.y, user.cameraAngle.z);
 }
 
 
