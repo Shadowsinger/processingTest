@@ -11,10 +11,11 @@
 # How to Play
 * Arrow keys for horizontal movement
 * \<Space> for vertical movement (to be implemented)
-* WASD for (relative) camera angle change 
+* A,D for (relative) camera angle change 
 
 # Todo List
 * ~~Camera switching~~
+* Prettier transitions in angle change
 * Main character gravity, wall interaction
 * Flight
 * Map generating

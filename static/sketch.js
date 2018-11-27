@@ -1,7 +1,12 @@
 
 let mapData;
 let user;
-let orientation = 0;
+let directionFacing = 0;
+let flightEnabled = 0;
+
+// Admin stuff, will remove
+let disableFlight = 1;
+let disableAutoMove = 1;
 
 class User {
 	constructor(){
@@ -12,11 +17,59 @@ class User {
 		push();
 		translate(this.pos.x, this.pos.y, this.pos.z);
 		stroke(0,0,0);
-		fill(255,0,0);
+		// fill(255,0,0);
+		fill(255,255,0);
 		strokeWeight(1);
 		box(10);
 		pop();
 	}
+	moveLeft(){
+		if (directionFacing%4 == 0)
+			this.pos.x -= 1;
+		else if (directionFacing%4 == 1)
+			this.pos.z += 1;
+		else if (directionFacing%4 == 2)
+			this.pos.x += 1;
+		else if (directionFacing%4 == 3)
+			this.pos.z -= 1;
+	}
+	moveRight(){
+		if (directionFacing%4 == 0)
+			this.pos.x += 1;
+		else if (directionFacing%4 == 1)
+			this.pos.z -= 1;
+		else if (directionFacing%4 == 2)
+			this.pos.x -= 1;
+		else if (directionFacing%4 == 3)
+			this.pos.z += 1;
+	}
+	moveForward(){
+		if (directionFacing%4 == 0)
+			this.pos.z -= 1;
+		else if (directionFacing%4 == 1)
+			this.pos.x -= 1;
+		else if (directionFacing%4 == 2)
+			this.pos.z += 1;
+		else if (directionFacing%4 == 3)
+			this.pos.x += 1;
+	}
+	moveBack(){
+		if (directionFacing%4 == 0)
+			this.pos.z += 1;
+		else if (directionFacing%4 == 1)
+			this.pos.x += 1;
+		else if (directionFacing%4 == 2)
+			this.pos.z -= 1;
+		else if (directionFacing%4 == 3)
+			this.pos.x -= 1;
+	}
+	moveUp(){
+		this.pos.y--;
+	}
+	moveDown(){
+		this.pos.y++;
+	}
+
 }
 
 $.get("getData", function(data){
@@ -34,13 +87,13 @@ function setup() {
 }
 
 function decideCameraPos() {
-	if (orientation%4 == 0)
+	if (directionFacing%4 == 0)
 		user.cameraAngle = createVector(0,0,70);
-	else if (orientation%4 == 1)
+	else if (directionFacing%4 == 1)
 		user.cameraAngle = createVector(70,0,0);
-	else if (orientation%4 == 2)
+	else if (directionFacing%4 == 2)
 		user.cameraAngle = createVector(0,0,-70);
-	else if (orientation%4 == 3)
+	else if (directionFacing%4 == 3)
 		user.cameraAngle = createVector(-70,0,0);
 }
 
@@ -49,12 +102,25 @@ function updateCamera() {
 }
 
 function draw() {
-	background(200,200,200);
+	if (flightEnabled)
+		background(0,255,0);
+	else
+		background(200,200,200);
 	fill(200,200,200);
 	// rotateX(mouseX/100);
 	// rotateY(mouseY/100);
 	if (mapData){
 		drawMap();
+	}
+
+	if (!disableAutoMove){
+		user.moveForward();
+	}
+	if (!disableFlight){
+		if (flightEnabled)
+			moveUp();
+		else
+			moveDown();
 	}
 
 	user.render();
@@ -83,53 +149,23 @@ function drawMap() {
 }
 
 function handleKeyDown(){
-	if (keyIsDown(LEFT_ARROW)){
-		if (orientation%4 == 0)
-			user.pos.x -= 1;
-		else if (orientation%4 == 1)
-			user.pos.z += 1;
-		else if (orientation%4 == 2)
-			user.pos.x += 1;
-		else if (orientation%4 == 3)
-			user.pos.z -= 1;
-	}
-	else if (keyIsDown(RIGHT_ARROW)){
-		if (orientation%4 == 0)
-			user.pos.x += 1;
-		else if (orientation%4 == 1)
-			user.pos.z -= 1;
-		else if (orientation%4 == 2)
-			user.pos.x -= 1;
-		else if (orientation%4 == 3)
-			user.pos.z += 1;
-	}
-	else if (keyIsDown(UP_ARROW)){
-		if (orientation%4 == 0)
-			user.pos.z -= 1;
-		else if (orientation%4 == 1)
-			user.pos.x -= 1;
-		else if (orientation%4 == 2)
-			user.pos.z += 1;
-		else if (orientation%4 == 3)
-			user.pos.x += 1;
-	}
-	else if (keyIsDown(DOWN_ARROW)){
-		if (orientation%4 == 0)
-			user.pos.z += 1;
-		else if (orientation%4 == 1)
-			user.pos.x += 1;
-		else if (orientation%4 == 2)
-			user.pos.z -= 1;
-		else if (orientation%4 == 3)
-			user.pos.x -= 1;
-	}
+	if (keyIsDown(LEFT_ARROW))
+		user.moveLeft();
+	else if (keyIsDown(RIGHT_ARROW))
+		user.moveRight();
+	else if (keyIsDown(UP_ARROW))
+		user.moveForward();
+	else if (keyIsDown(DOWN_ARROW))
+		user.moveBack();
 }
 
 function keyPressed() {
 	if (keyCode === 65)			// a
-		orientation++;
+		directionFacing++;
 	else if (keyCode == 68)	// d
-		orientation+=3;
+		directionFacing+=3;
+	else if (keyCode == 32)	// <Space>
+		flightEnabled = !flightEnabled;
 }
 
 
