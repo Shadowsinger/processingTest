@@ -4,6 +4,9 @@
 * Kevin Hsu
 * Alek Westover
 
+# Coding reminders
+* DONT CHANGE ORIENTATION UNTIL COORDINATES ARE MULTIPLES OF 50!!!
+
 # Maps
 * Each map level starts with a line of `---`
 * Lines that start with `#` will not be read

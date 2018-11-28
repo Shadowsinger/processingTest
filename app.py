@@ -9,8 +9,8 @@ def index():
 
 @app.route("/getData")
 def getData():
+    #  return json.dumps(readMap("static/maps/map42.txt"))
     return json.dumps(readMap("static/maps/map3.txt"))
-    #  return json.dumps(readMap("static/maps/map1.txt"))
 
 def readMap(filename): 
     data = []
