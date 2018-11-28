@@ -2,7 +2,8 @@
 let mapData;
 let user;
 let directionFacing = 0;
-let flightEnabled = 0;
+let flightEnabled = 0;		// This is for checking whether gravity works or not. 
+													//For activation, use disableFlight
 
 // Admin stuff, will remove
 let disableFlight = 1;
@@ -116,11 +117,11 @@ function draw() {
 	if (!disableAutoMove){
 		user.moveForward();
 	}
-	if (!disableFlight){
+	if (!disableFlight && mapData){
 		if (flightEnabled)
-			moveUp();
+			user.moveUp();
 		else
-			moveDown();
+			user.moveDown();
 	}
 
 	user.render();
@@ -166,6 +167,8 @@ function keyPressed() {
 		directionFacing+=3;
 	else if (keyCode == 32)	// <Space>
 		flightEnabled = !flightEnabled;
+	else if (keyCode == 66)	// b
+		disableFlight = !disableFlight;
 }
 
 

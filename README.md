@@ -18,10 +18,11 @@
 
 # Todo List
 * ~~Camera switching~~
+* ~~Map generating~~
+* Flight
 * Prettier transitions in angle change
 * Main character gravity, wall interaction
-* Flight
-* Map generating
+* Rooms/stages that use the mapGeneration
 
 * Collect keys
 * Scoreboard
