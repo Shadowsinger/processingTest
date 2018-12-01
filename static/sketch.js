@@ -4,6 +4,7 @@ let user;
 
 const boxSize = 50;
 
+let keyRotation = [0, 0, 0];
 let directionFacing = 0;
 let flightEnabled = 0;		// This is for checking whether gravity works or not. 
 													//For activation, use disableFlight
@@ -38,21 +39,22 @@ class User {
 		this.blockIndex = [1,0,1];
 
 		this.pos = this.spawnPoint;
-		this.cameraAngle = p5.Vector.add(this.spawnPoint,createVector(0,0,-80));
+		this.cameraAngle = p5.Vector.add(this.spawnPoint,createVector(0,0,-70));
 
-		//150->70 (pos to cam)
+		//150->80 (pos to cam)
 	}
 
 	checkWalls(){
 		// what dirrection is it hitting a wall in? 0-none, 1-"right", -1-"left"
 		let dirs = [0,0,0];
-		let trans = [2,0,1];
 		let tpos = this.pos.array();
+
+		// x, y, z
 		for (var d = 0; d < 3; d++)
 		{
-			if (tpos[d]-this.sz/2<(this.blockIndex[trans[d]]+0.5)*boxSize)
+			if (tpos[d]-this.sz/2<(this.blockIndex[d]-0.5)*boxSize)
 				dirs[d] = -1;
-			else if(tpos[d]+this.sz/2>(this.blockIndex[trans[d]]-0.5)*boxSize)
+			else if(tpos[d]+this.sz/2>(this.blockIndex[d]+0.5)*boxSize)
 				dirs[d] = 1;	
 		}
 		console.log(dirs);
@@ -61,6 +63,8 @@ class User {
 	render(){
 		push();
 		translate(this.pos.x, this.pos.y, this.pos.z);
+			
+
 		// stroke(0,0,0);
 		stroke(255,0,0);
 		// fill(255,0,0);
@@ -144,9 +148,8 @@ function decideCameraPos() {
 }
 
 function updateCamera() {
-	temp = p5.Vector.add(user.cameraAngle, user.pos);
-	camera(temp.x, temp.y, temp.z, user.pos.x, user.pos.y, user.pos.z, 0, 1, 0);
-
+	let cameraPos = p5.Vector.add(user.cameraAngle, user.pos);
+	camera(cameraPos.x, cameraPos.y, cameraPos.z, user.pos.x, user.pos.y, user.pos.z, 0, 1, 0);
 }
 
 function draw() {
@@ -155,8 +158,12 @@ function draw() {
 	else
 		background(200,200,200);
 	fill(200,200,200);
-	rotateX(mouseX/100);
-	rotateY(mouseY/100);
+
+	push();
+	rotateX(keyRotation[0]);
+	rotateY(keyRotation[1]);
+	rotateZ(keyRotation[2]);
+
 	if (mapData){
 		drawMap();
 	}
@@ -171,11 +178,15 @@ function draw() {
 			user.moveDown();
 	}
 
+
 	user.render();
 	handleKeyDown();
 	decideCameraPos();
+	pop();
+
 	updateCamera();
 }
+
 
 function drawMap() {
 	fill(0,0,0,30);
@@ -186,10 +197,14 @@ function drawMap() {
 		for (var z = 0; z < mapData.length; z++) {
 			for (var x = 0; x < mapData.length; x++) {
 				if (mapData[y][z][x]) {
-					push();
-					translate(x*50,y*50,z*50);
-					box(boxSize);
-					pop();
+					let relativeWallPos = createVector(50*x,50*y,50*z).sub(user.pos);
+					if(relativeWallPos.dot(user.cameraAngle)<0 && relativeWallPos.mag()<200)
+					{
+						push();
+						translate(x*50,y*50,z*50);
+						box(boxSize);
+						pop();	
+					}
 				}
 			}
 		}
@@ -205,10 +220,23 @@ function handleKeyDown(){
 		user.moveForward();
 	else if (keyIsDown(DOWN_ARROW))
 		user.moveBack();
+
+	else if (keyIsDown(74))	// j
+		keyRotation[0]-=0.01;
+	else if (keyIsDown(76))	// l
+		keyRotation[0]+=0.01;
+	else if (keyIsDown(75))	// k
+		keyRotation[1]-=0.01;
+	else if (keyIsDown(73))	// i
+		keyRotation[1]+=0.01;
+	else if (keyIsDown(85))	// u
+		keyRotation[2]-=0.01;
+	else if (keyIsDown(79))	// o
+		keyRotation[2]+=0.01;
 }
 
 function keyPressed() {
-	if (keyCode === 65)			// a
+	if (keyCode === 65)		// a
 		directionFacing++;
 	else if (keyCode == 68)	// d
 		directionFacing+=3;
@@ -216,6 +244,8 @@ function keyPressed() {
 		flightEnabled = !flightEnabled;
 	else if (keyCode == 66)	// b
 		disableFlight = !disableFlight;
+
+
 }
 
 
