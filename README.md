@@ -17,6 +17,7 @@
 * A,D for (relative) camera angle change 
 
 # Todo List
+* CLEAN UP SIZE SHIT FOR USER
 * ~~Camera switching~~
 * ~~Map generating~~
 * Flight

@@ -20,6 +20,10 @@ for i in range(1,n+1):
 	for j in range(1,n+1):
 		for k in range(1,n+1):
 			y[i][j][k] = x[i-1][j-1][k-1]
+for j in range(1,n+1):
+    for k in range(1,n+1):
+        y[0][j][k] = False
+
 
 print(x)
 print(y)

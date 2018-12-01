@@ -1,6 +1,9 @@
 
 let mapData;
 let user;
+
+const boxSize = 50;
+
 let directionFacing = 0;
 let flightEnabled = 0;		// This is for checking whether gravity works or not. 
 													//For activation, use disableFlight
@@ -9,19 +12,61 @@ let flightEnabled = 0;		// This is for checking whether gravity works or not.
 let disableFlight = 1;
 let disableAutoMove = 1;
 
+class wallUnit{
+	constructor(x, y, z, sz){
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.sz = sz;
+	}
+
+	checkCollide(entity){
+		let xGood = max(this.x, entity.pos.x) > min(this.x+this.sz, entity.pos.x+entity.sz);
+		let yGood = max(this.y, entity.pos.y) > min(this.y+this.sz, entity.pos.y+entity.sz);
+		let zGood = max(this.z, entity.pos.z) > min(this.z+this.sz, entity.pos.z+entity.sz);
+		return (xGood && yGood && zGood);
+	}
+
+}
+
+
 class User {
 	constructor(){
-		this.pos = createVector(0,0,150);
-		this.cameraAngle = createVector(0, 0, 70);
+		this.sz = 10;
+
+		this.spawnPoint = createVector(boxSize, 0, boxSize);
+		this.blockIndex = [1,0,1];
+
+		this.pos = this.spawnPoint;
+		this.cameraAngle = p5.Vector.add(this.spawnPoint,createVector(0,0,-80));
+
+		//150->70 (pos to cam)
 	}
+
+	checkWalls(){
+		// what dirrection is it hitting a wall in? 0-none, 1-"right", -1-"left"
+		let dirs = [0,0,0];
+		let trans = [2,0,1];
+		let tpos = this.pos.array();
+		for (var d = 0; d < 3; d++)
+		{
+			if (tpos[d]-this.sz/2<(this.blockIndex[trans[d]]+0.5)*boxSize)
+				dirs[d] = -1;
+			else if(tpos[d]+this.sz/2>(this.blockIndex[trans[d]]-0.5)*boxSize)
+				dirs[d] = 1;	
+		}
+		console.log(dirs);
+	}
+
 	render(){
 		push();
 		translate(this.pos.x, this.pos.y, this.pos.z);
-		stroke(0,0,0);
+		// stroke(0,0,0);
+		stroke(255,0,0);
 		// fill(255,0,0);
 		fill(255,255,0);
 		strokeWeight(1);
-		box(10);
+		box(this.sz);
 		pop();
 	}
 	moveLeft(){
@@ -99,7 +144,9 @@ function decideCameraPos() {
 }
 
 function updateCamera() {
-	camera(user.pos.x+user.cameraAngle.x, user.pos.y+user.cameraAngle.y, user.pos.z+user.cameraAngle.z, user.pos.x, user.pos.y, user.pos.z, 0, 1, 0);
+	temp = p5.Vector.add(user.cameraAngle, user.pos);
+	camera(temp.x, temp.y, temp.z, user.pos.x, user.pos.y, user.pos.z, 0, 1, 0);
+
 }
 
 function draw() {
@@ -108,8 +155,8 @@ function draw() {
 	else
 		background(200,200,200);
 	fill(200,200,200);
-	// rotateX(mouseX/100);
-	// rotateY(mouseY/100);
+	rotateX(mouseX/100);
+	rotateY(mouseY/100);
 	if (mapData){
 		drawMap();
 	}
@@ -141,7 +188,7 @@ function drawMap() {
 				if (mapData[y][z][x]) {
 					push();
 					translate(x*50,y*50,z*50);
-					box(50);
+					box(boxSize);
 					pop();
 				}
 			}
@@ -154,7 +201,7 @@ function handleKeyDown(){
 		user.moveLeft();
 	else if (keyIsDown(RIGHT_ARROW))
 		user.moveRight();
-	else if (keyIsDown(UP_ARROW))
+	if (keyIsDown(UP_ARROW))
 		user.moveForward();
 	else if (keyIsDown(DOWN_ARROW))
 		user.moveBack();
