@@ -64,11 +64,12 @@ class User {
 		push();
 		translate(this.pos.x, this.pos.y, this.pos.z);
 			
+		rotateX(keyRotation[0]);
+		rotateY(keyRotation[1]);
+		rotateZ(keyRotation[2]);
 
-		// stroke(0,0,0);
-		stroke(255,0,0);
-		// fill(255,0,0);
-		fill(255,255,0);
+		stroke(0,0,255);
+		fill(0,255,0);
 		strokeWeight(1);
 		box(this.sz);
 		pop();
@@ -160,10 +161,6 @@ function draw() {
 	fill(200,200,200);
 
 	push();
-	rotateX(keyRotation[0]);
-	rotateY(keyRotation[1]);
-	rotateZ(keyRotation[2]);
-
 	if (mapData){
 		drawMap();
 	}
