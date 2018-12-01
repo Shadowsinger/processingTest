@@ -13,21 +13,13 @@ let flightEnabled = 0;		// This is for checking whether gravity works or not.
 let disableFlight = 1;
 let disableAutoMove = 1;
 
-class wallUnit{
-	constructor(x, y, z, sz){
-		this.x = x;
-		this.y = y;
-		this.z = z;
-		this.sz = sz;
-	}
 
-	checkCollide(entity){
-		let xGood = max(this.x, entity.pos.x) > min(this.x+this.sz, entity.pos.x+entity.sz);
-		let yGood = max(this.y, entity.pos.y) > min(this.y+this.sz, entity.pos.y+entity.sz);
-		let zGood = max(this.z, entity.pos.z) > min(this.z+this.sz, entity.pos.z+entity.sz);
-		return (xGood && yGood && zGood);
-	}
-
+function checkCollide(posA, posB, szA, szB){
+	let xGood = max(posA.x-szA/2, posB.x-szB/2) > min(posA.x+szA/2, posA.x+szB/2);
+	let yGood = max(posA.y-szA/2, posB.y-szB/2) > min(posA.y+szA/2, posA.y+szB/2);
+	let zGood = max(posA.z-szA/2, posB.z-szB/2) > min(posA.z+szA/2, posA.z+szB/2);
+	console.log(xGood + yGood + zGood);
+	return (xGood && yGood && zGood);
 }
 
 
@@ -45,7 +37,7 @@ class User {
 	}
 
 	checkWalls(){
-		// what dirrection is it hitting a wall in? 0-none, 1-"right", -1-"left"
+		// what direction is it hitting a wall in? 0-none, 1-"right", -1-"left"
 		let dirs = [0,0,0];
 		let tpos = this.pos.array();
 
@@ -56,6 +48,17 @@ class User {
 				dirs[d] = -1;
 			else if(tpos[d]+this.sz/2>(this.blockIndex[d]+0.5)*boxSize)
 				dirs[d] = 1;	
+		}
+
+		for(var i = 0; i < 2; i++){
+			for(var j = 0; j < 2; j++){
+				for(var k = 0; k < 2; k++){
+					if(mapData[this.blockIndex[0] + dirs[i]*i][this.blockIndex[1] + dirs[j]*j][this.blockIndex[2] + dirs[k]*k]){
+						console.log("dnd");
+					}
+
+				}
+			}
 		}
 		console.log(dirs);
 	}
