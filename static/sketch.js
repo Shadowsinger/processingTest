@@ -6,13 +6,15 @@ const boxSize = 50;
 
 let keyRotation = [0, 0, 0];
 let directionFacing = 0;
-let flightEnabled = 0;		// This is for checking whether gravity works or not. 
+let flightEnabled = 0;		// This is for checking whether gravity works or not.
 													//For activation, use disableFlight
 
 // Admin stuff, will remove
 let disableFlight = 1;
 let disableAutoMove = 1;
 
+const renderDist = 4;
+let img;
 
 function checkCollide(posA, posB, szA, szB){
 	let xGood = max(posA.x-szA/2, posB.x-szB/2) > min(posA.x+szA/2, posA.x+szB/2);
@@ -47,7 +49,7 @@ class User {
 			if (tpos[d]-this.sz/2<(this.blockIndex[d]-0.5)*boxSize)
 				dirs[d] = -1;
 			else if(tpos[d]+this.sz/2>(this.blockIndex[d]+0.5)*boxSize)
-				dirs[d] = 1;	
+				dirs[d] = 1;
 		}
 
 		for(var i = 0; i < 2; i++){
@@ -66,7 +68,7 @@ class User {
 	render(){
 		push();
 		translate(this.pos.x, this.pos.y, this.pos.z);
-			
+
 		rotateX(keyRotation[0]);
 		rotateY(keyRotation[1]);
 		rotateZ(keyRotation[2]);
@@ -74,6 +76,7 @@ class User {
 		stroke(0,0,255);
 		fill(0,255,0);
 		strokeWeight(1);
+		texture(img);
 		box(this.sz);
 		pop();
 	}
@@ -135,6 +138,7 @@ function initVars() {
 }
 
 function setup() {
+	img = loadImage('static/alek.png');
 	createCanvas(500,500,WEBGL);
 	initVars();
 	updateCamera();
@@ -189,7 +193,6 @@ function draw() {
 
 
 function drawMap() {
-	fill(0,0,0,30);
 	fill(0,0,0);
 	stroke(0, 255, 242);
 	strokeWeight(4);
@@ -197,13 +200,41 @@ function drawMap() {
 		for (var z = 0; z < mapData.length; z++) {
 			for (var x = 0; x < mapData.length; x++) {
 				if (mapData[y][z][x]) {
-					let relativeWallPos = createVector(50*x,50*y,50*z).sub(user.pos);
-					if(relativeWallPos.dot(user.cameraAngle)<0 && relativeWallPos.mag()<200)
+					let relativeWallPos = createVector(boxSize*x,boxSize*y,boxSize*z).sub(user.pos);
+					let wallDot = relativeWallPos.dot(user.cameraAngle);
+					if(wallDot<0 && relativeWallPos.mag() < boxSize * renderDist)
 					{
 						push();
-						translate(x*50,y*50,z*50);
+						translate(x*boxSize,y*boxSize,z*boxSize);
 						box(boxSize);
-						pop();	
+						pop();
+					}
+					else if (wallDot > 0 && relativeWallPos.mag() < boxSize*2)
+					{
+						if(relativeWallPos.mag() < boxSize){
+							// fill(255,0,0,150);
+							stroke(0, 255, 242,50);
+							strokeWeight(4);
+							push();
+							translate(x*boxSize,y*boxSize,z*boxSize);
+							box(boxSize);
+							pop();
+							fill(0,0,0);
+							stroke(0, 255, 242);
+							strokeWeight(4);
+						} else{
+							fill(0,0,0);
+							stroke(0, 255, 242,50);
+							strokeWeight(4);
+							push();
+							translate(x*boxSize,y*boxSize,z*boxSize);
+							box(boxSize);
+							pop();
+							fill(0,0,0);
+							stroke(0, 255, 242);
+							strokeWeight(4);
+						}
+
 					}
 				}
 			}
@@ -247,5 +278,3 @@ function keyPressed() {
 
 
 }
-
-
