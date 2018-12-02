@@ -1,10 +1,10 @@
 import numpy as np
 import random
 
-n = 8  # side length - 2
+n = 12  # side length - 2
 x = np.full((n,n,n),1)
 
-def drillPath(l=6,directions=[1,2]):
+def drillPath(l=30,directions=[1,2]):
 	pos = np.array([random.randint(0,n-1) for i in range(3)])
 	for i in range(l):
 		idx = random.choice(directions)
@@ -20,9 +20,9 @@ for i in range(1,n+1):
 	for j in range(1,n+1):
 		for k in range(1,n+1):
 			y[i][j][k] = x[i-1][j-1][k-1]
-# for j in range(1,n+1):
-#     for k in range(1,n+1):
-#         y[0][j][k] = 0
+for j in range(1,n+1):
+    for k in range(1,n+1):
+        y[0][j][k] = 0
 
 
 print(x)

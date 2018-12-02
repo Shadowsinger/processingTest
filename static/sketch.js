@@ -1,7 +1,7 @@
 
 let mapData;
 let user;
-let ghost
+let ghost;
 let items;
 var score = 0;
 
@@ -41,8 +41,8 @@ class User {
 	constructor(){
 		this.sz = 10;
 
-		this.spawnPoint = createVector(boxSize*2, boxSize, boxSize*2);
-		this.blockIndex = [2,1,2];
+		this.spawnPoint = createVector(boxSize*1, boxSize*0, boxSize*1);
+		this.blockIndex = [1,0,1];
 
 		this.pos = this.spawnPoint;
 		this.cameraAngle = p5.Vector.add(this.spawnPoint,createVector(0,-70,-70)).normalize().mult(70);
@@ -58,17 +58,22 @@ class User {
 	}
 
 	checkWalls(){
-		this.locationIndex = p5.Vector.div(this.pos, boxSize);
+		if(this.pos.y >0){
+			this.locationIndex = p5.Vector.div(this.pos, boxSize);
 
-		this.locationIndex.x = round(this.locationIndex.x);
-		this.locationIndex.y = round(this.locationIndex.y);
-		this.locationIndex.z = round(this.locationIndex.z);
-		if(mapData[this.locationIndex.y][this.locationIndex.z][this.locationIndex.x] == 9){
-			score++;
-			$("#score").html(score);
-			mapData[this.locationIndex.y][this.locationIndex.z][this.locationIndex.x] = 0;
+			this.locationIndex.x = round(this.locationIndex.x);
+			this.locationIndex.y = round(this.locationIndex.y);
+			this.locationIndex.z = round(this.locationIndex.z);
+			if(mapData[this.locationIndex.y][this.locationIndex.z][this.locationIndex.x] == 9){
+				score++;
+				$("#score").html(score);
+				mapData[this.locationIndex.y][this.locationIndex.z][this.locationIndex.x] = 0;
+			}
+			return mapData[this.locationIndex.y][this.locationIndex.z][this.locationIndex.x] == 1;
 		}
-		return mapData[this.locationIndex.y][this.locationIndex.z][this.locationIndex.x] == 1;
+		else{
+			return false;
+		}
 
 	}
 
@@ -83,50 +88,49 @@ class User {
 		stroke(0,0,255);
 		fill(0,255,0);
 		strokeWeight(1);
-		// texture(img);
+		texture(img);
 		box(this.sz);
 		pop();
 	}
 	moveLeft(){
-		this.pos.x-=user.cameraAngle.z/70;
+		this.pos.x-=2*this.cameraAngle.z/70;
 		if(this.checkWalls()){
-			this.pos.x+=user.cameraAngle.z/70;
+			this.pos.x+=2*this.cameraAngle.z/70;
 		}
-		this.pos.z+=user.cameraAngle.x/70;
+		this.pos.z+=2*this.cameraAngle.x/70;
 		if(this.checkWalls()){
-			this.pos.z-=user.cameraAngle.x/70;
+			this.pos.z-=2*this.cameraAngle.x/70;
 		}
 	}
 	moveRight(){
-		this.pos.x+=user.cameraAngle.z/70;
+		this.pos.x+=2*this.cameraAngle.z/70;
 		if(this.checkWalls()){
-			this.pos.x-=user.cameraAngle.z/70;
+			this.pos.x-=2*this.cameraAngle.z/70;
 		}
-		this.pos.z-=user.cameraAngle.x/70;
+		this.pos.z-=2*this.cameraAngle.x/70;
 		if(this.checkWalls()){
-			this.pos.z+=user.cameraAngle.x/70;
+			this.pos.z+=2*this.cameraAngle.x/70;
 		}
 	}
 	moveForward(){
-		this.pos.x-=user.cameraAngle.x/70;
+		this.pos.x-=2*this.cameraAngle.x/70;
 		if(this.checkWalls()){
-			this.pos.x+=user.cameraAngle.x/70;
+			this.pos.x+=2*this.cameraAngle.x/70;
 		}
-		this.pos.z-=user.cameraAngle.z/70;
+		this.pos.z-=2*this.cameraAngle.z/70;
 		if(this.checkWalls()){
-			this.pos.z+=user.cameraAngle.z/70;
+			this.pos.z+=2*this.cameraAngle.z/70;
 		}
 	}
 	moveBack(){
-
-		this.pos.x+=user.cameraAngle.x/70;
+		this.pos.x+=2*this.cameraAngle.x/70;
 		if(this.checkWalls()){
-			this.pos.x-=user.cameraAngle.x/70;
+			this.pos.x-=2*this.cameraAngle.x/70;
 		}
 
-		this.pos.z+=user.cameraAngle.z/70;
+		this.pos.z+=2*this.cameraAngle.z/70;
 		if(this.checkWalls()){
-			this.pos.z-=user.cameraAngle.z/70;
+			this.pos.z-=2*this.cameraAngle.z/70;
 		}
 	}
 	moveUp(v){
@@ -143,10 +147,7 @@ class User {
 			this.verticalVelocity=0;
 		}
 	}
-
 }
-
-
 
 $.get("getItemData", function(data){
 	items = JSON.parse(data);
@@ -154,14 +155,11 @@ $.get("getItemData", function(data){
 
 function initVars() {
 	user = new User();
-	for (var i = 0; i < ghostNum ; i++) {
-		ghost = new Ghost();
-	}
-
+	ghost = new Ghost();
 }
 
 function setup() {
-	img = loadImage("/static/img/alek.png");
+	img = loadImage("/static/img/dog1.png");
 	createCanvas(500,500,WEBGL);
 	initVars();
 	updateCamera();
@@ -196,12 +194,8 @@ function draw() {
 			user.moveDown(1);
 	}
 
-	// let prevUserYPos = user.pos.y
-	user.verticalVelocity -= 10/30;
+	user.verticalVelocity -= 10;
 	user.moveUp(user.verticalVelocity/60);
-
-	// user.verticalVelocity =user.pos.y - prevUserYPos;
-
 
 	user.render();
 	ghost.render();
@@ -241,9 +235,6 @@ function drawMap() {
 					fill(...tmpColor, transparency);
 					box(tmpSz);
 					pop();
-
-
-
 				}
 			}
 		}
@@ -294,9 +285,7 @@ function handleKeyDown(){
 
 function keyPressed() {
 	if (keyCode == 32){	// <Space>
-
 		user.verticalVelocity += user.jumpForce/(user.mass*10);
-
 	}
 
 	else if (keyCode == 66)	// b
