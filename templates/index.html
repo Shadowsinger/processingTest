@@ -1,12 +1,33 @@
 {% extends 'base.html' %}
 {% block content %}
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='css/main.css') }}">
+<link href="https://unpkg.com/nes.css/css/nes.min.css" rel="stylesheet" />
 
 <script src="{{url_for('static', filename='sketch.js')}}"></script>
+<<<<<<< HEAD
 <script src="{{url_for('static', filename='ghost.js')}}"></script>
 
 <button style="float:right;" onclick="doReroute()">Leaderboard</button>
+=======
+
+<div class="buttonContainer">
+	<button type="button" class="btn leaderboardBtn" onclick="doReroute()">Leaderboard</button>
+</div>
+
+<section class="container with-title">
+	<h2 class="title" style="background-color: #26292D;">SCORE: 
+		<div id="score" style="float: right;">0</div>
+	</h2>
+</section>
+
+>>>>>>> 40a8b8423677b7c3f2c691786b0086c59fa37275
 <script type="text/javascript">
 	function doReroute() {
+		if(score != 0){
+			var name = prompt("Please enter your name:", "kaisu");
+			let userData = [name, score];
+			sendScore(userData);
+		}
 		window.location.href="/scores";
 	}
 </script>

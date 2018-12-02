@@ -1,0 +1,23 @@
+
+@font-face {
+  font-family: 'Kongtext';
+  src: url('font/kongtext.ttf')  format('truetype');
+}
+
+*{
+	background-color: #26292D;
+}
+.container{
+	text-align: center;
+	color: #00FFF2;
+  font-family: 'Kongtext';
+}
+h1{
+	font-size: 80px;
+}
+.bulletinBoard{
+	width: 40%;
+	font-size: 30px;
+}
+
+
