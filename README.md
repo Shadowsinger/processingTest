@@ -4,15 +4,14 @@
 * Kevin Hsu
 * Alek Westover
 
-# Coding reminders
-* DONT CHANGE ORIENTATION UNTIL COORDINATES ARE MULTIPLES OF 50!!!
-
 # Maps
 * Each map level starts with a line of `---`
 * Lines that start with `#` will not be read
-* 0 - empty space
-* 1 - wall
-* 2 - pellet, ghosts can go through
+* 0 - Empty space
+* 1 - Wall
+* 2 - Pellets, ghosts can go through
+
+* 9 - Dr. Strange portal
 
 
 # How to Play
@@ -21,19 +20,18 @@
 * A,D for (relative) camera angle change 
 
 # Todo List
-* CLEAN UP SIZE SHIT FOR USER
 * ~~Camera switching~~
 * ~~Map generating~~
+* ~~Prettier transitions in angle change~~
 * Flight
-* Prettier transitions in angle change
-* Main character gravity, wall interaction
 * Rooms/stages that use the mapGeneration
-
 * Collect keys
 * Scoreboard
-* Ghost algorithms
+
 * Dr. Strange-style portals
-* Walking on walls
+* Main character gravity, wall interaction
+* Minimaps
+* Ghost algorithms
 
 # LINKS & NOTES
 * [Camera perspectives (outdated but still helpful)](https://processing.org/reference/camera_.html)

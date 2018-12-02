@@ -1,0 +1,17 @@
+{
+	"0": {
+		"color": [0,0,0],
+		"description": "blank",
+		"sz": 50
+	},
+	"1": {
+		"color": [0,0,0],
+		"description": "test",
+		"sz": 50
+	},
+	"9": {
+		"color": [255,0,0],
+		"description": "test",
+		"sz": 10
+	}
+}

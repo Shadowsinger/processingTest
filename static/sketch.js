@@ -1,8 +1,13 @@
 
 let mapData;
 let user;
+let ghost;
+let items;
+var score = 0;
 
 const boxSize = 50;
+
+const ghostNum = 10;
 
 let keyRotation = [0, 0, 0];
 let directionFacing = 0;
@@ -27,67 +32,48 @@ function checkCollide(posA, posB, szA, szB){
 	return (xGood && yGood && zGood);
 }
 
+$.get("getData", function(data){
+	mapData = JSON.parse(data);
+	identifyTurningPoints(mapData);
+});
 
 class User {
 	constructor(){
 		this.sz = 10;
 
-		this.spawnPoint = createVector(boxSize, 0, boxSize);
+		this.spawnPoint = createVector(boxSize*1, boxSize*0, boxSize*1);
 		this.blockIndex = [1,0,1];
 
 		this.pos = this.spawnPoint;
-		this.cameraAngle = p5.Vector.add(this.spawnPoint,createVector(0,0,-70));
+		this.cameraAngle = p5.Vector.add(this.spawnPoint,createVector(0,-70,-70)).normalize().mult(70);
 
+		this.mass = 1;
+		this.jumpForce = 800;
+		this.verticalVelocity = 0;
 		//150->80 (pos to cam)
 	}
 
 	updateBlockIndex(){
-		// let temp = [floor(this.pos.x/50), floor(this.pos.y/50), floor(this.pos.z/50)]
-		// if(this.blockIndex[0] == temp[0] && this.blockIndex[1] == temp[1] && this.blockIndex[2] == temp[2]){
-		//   console.log("");
-		// }
-		// else
-		//   console.log("CHANGE");
-		// this.blockIndex = [floor(this.pos.x/50), floor(this.pos.y/50), floor(this.pos.z/50)];
-		this.blockIndex = [floor(this.pos.x/50+0.5), floor(this.pos.y/50+0.5), floor(this.pos.z/50+0.5)];
+		this.blockIndex = [round(this.pos.x/50), round(this.pos.y/50), round(this.pos.z/50)];
 	}
 
 	checkWalls(){
-		// what direction is it hitting a wall in? 0-none, 1-"right", -1-"left"
-		let dirs = [0,0,0];
-		let tpos = this.pos.array();
+		if(this.pos.y >0){
+			this.locationIndex = p5.Vector.div(this.pos, boxSize);
 
-		// x, y, z
-		for (var d = 0; d < 3; d++)
-		{
-			if (tpos[d]-this.sz/2<(this.blockIndex[d]-0.5)*boxSize)
-				dirs[d] = -1;
-			else if(tpos[d]+this.sz/2>(this.blockIndex[d]+0.5)*boxSize)
-				dirs[d] = 1;
-		}
-
-		let allIndices = [];
-
-		// console.log(dirs);
-		for(var i = 0; i < 2; i++){
-			if (dirs[0] == 0 && i == 0)
-				continue;
-			let tmpI = this.blockIndex[0]+dirs[0]*i;
-			for(var j = 0; j < 2; j++){
-				if (dirs[1] == 0 && j == 0)
-					continue;
-				let tmpJ = this.blockIndex[1]+dirs[1]*j;
-				for(var k = 0; k < 2; k++){
-					if (dirs[2] == 0 && k == 0)
-						continue;
-					let tmpK = this.blockIndex[2]+dirs[2]*k;
-					if(mapData[tmpJ][tmpK][tmpI]){
-						allIndices.push([dirs[0]*i, dirs[1]*j, dirs[2]*k]);
-					}
-				}
+			this.locationIndex.x = round(this.locationIndex.x);
+			this.locationIndex.y = round(this.locationIndex.y);
+			this.locationIndex.z = round(this.locationIndex.z);
+			if(mapData[this.locationIndex.y][this.locationIndex.z][this.locationIndex.x] == 9){
+				score++;
+				$("#score").html(score);
+				mapData[this.locationIndex.y][this.locationIndex.z][this.locationIndex.x] = 0;
 			}
+			return mapData[this.locationIndex.y][this.locationIndex.z][this.locationIndex.x] == 1;
 		}
-		return allIndices;
+		else{
+			return false;
+		}
 
 	}
 
@@ -102,59 +88,81 @@ class User {
 		stroke(0,0,255);
 		fill(0,255,0);
 		strokeWeight(1);
-		// texture(img);
+		texture(img);
 		box(this.sz);
 		pop();
 	}
 	moveLeft(){
-		this.pos.x-=user.cameraAngle.z/70;
-		this.pos.z+=user.cameraAngle.x/70;
+		this.pos.x-=2*this.cameraAngle.z/70;
+		if(this.checkWalls()){
+			this.pos.x+=2*this.cameraAngle.z/70;
+		}
+		this.pos.z+=2*this.cameraAngle.x/70;
+		if(this.checkWalls()){
+			this.pos.z-=2*this.cameraAngle.x/70;
+		}
 	}
 	moveRight(){
-		this.pos.x+=user.cameraAngle.z/70;
-		this.pos.z-=user.cameraAngle.x/70;
+		this.pos.x+=2*this.cameraAngle.z/70;
+		if(this.checkWalls()){
+			this.pos.x-=2*this.cameraAngle.z/70;
+		}
+		this.pos.z-=2*this.cameraAngle.x/70;
+		if(this.checkWalls()){
+			this.pos.z+=2*this.cameraAngle.x/70;
+		}
 	}
 	moveForward(){
-		this.pos.x-=user.cameraAngle.x/70;
-		this.pos.z-=user.cameraAngle.z/70;
+		this.pos.x-=2*this.cameraAngle.x/70;
+		if(this.checkWalls()){
+			this.pos.x+=2*this.cameraAngle.x/70;
+		}
+		this.pos.z-=2*this.cameraAngle.z/70;
+		if(this.checkWalls()){
+			this.pos.z+=2*this.cameraAngle.z/70;
+		}
 	}
 	moveBack(){
-		this.pos.x+=user.cameraAngle.x/70;
-		this.pos.z+=user.cameraAngle.z/70;
-	}
-	moveUp(){
-		this.pos.y--;
-	}
-	moveDown(){
-		this.pos.y++;
-	}
+		this.pos.x+=2*this.cameraAngle.x/70;
+		if(this.checkWalls()){
+			this.pos.x-=2*this.cameraAngle.x/70;
+		}
 
+		this.pos.z+=2*this.cameraAngle.z/70;
+		if(this.checkWalls()){
+			this.pos.z-=2*this.cameraAngle.z/70;
+		}
+	}
+	moveUp(v){
+		this.pos.y-=v;
+		if(this.checkWalls()){
+			this.pos.y+=v;
+			this.verticalVelocity=0;
+		}
+	}
+	moveDown(v){
+		this.pos.y+=v;
+		if (this.checkWalls()){
+			this.pos.y-=v;
+			this.verticalVelocity=0;
+		}
+	}
 }
 
-$.get("getData", function(data){
-	mapData = JSON.parse(data);
+$.get("getItemData", function(data){
+	items = JSON.parse(data);
 });
 
 function initVars() {
 	user = new User();
+	ghost = new Ghost();
 }
 
 function setup() {
-	img = loadImage('/static/alek.png');
+	img = loadImage("/static/img/dog1.png");
 	createCanvas(500,500,WEBGL);
 	initVars();
 	updateCamera();
-}
-
-function decideCameraPos() {
-	// if (directionFacing%4 == 0)
-	// 	user.cameraAngle = createVector(0,0,70);
-	// else if (directionFacing%4 == 1)
-	// 	user.cameraAngle = createVector(70,0,0);
-	// else if (directionFacing%4 == 2)
-	// 	user.cameraAngle = createVector(0,0,-70);
-	// else if (directionFacing%4 == 3)
-	// 	user.cameraAngle = createVector(-70,0,0);
 }
 
 function updateCamera() {
@@ -169,26 +177,30 @@ function draw() {
 		background(200,200,200);
 	fill(200,200,200);
 
+	if (!mapData)
+		return;
+
 	push();
-	if (mapData){
-		drawMap();
-		user.updateBlockIndex();
-	}
+	drawMap();
+	user.updateBlockIndex();
 
 	if (!disableAutoMove){
 		user.moveForward();
 	}
 	if (!disableFlight && mapData){
 		if (flightEnabled)
-			user.moveUp();
+			user.moveUp(1);
 		else
-			user.moveDown();
+			user.moveDown(1);
 	}
 
+	user.verticalVelocity -= 10;
+	user.moveUp(user.verticalVelocity/60);
 
 	user.render();
+	ghost.render();
+	ghost.moveInRandomDir();
 	handleKeyDown();
-	decideCameraPos();
 	pop();
 
 	updateCamera();
@@ -202,43 +214,27 @@ function drawMap() {
 	for (var y = 0; y < mapData.length; y++) {
 		for (var z = 0; z < mapData.length; z++) {
 			for (var x = 0; x < mapData.length; x++) {
-				if (mapData[y][z][x]) {
+				if (mapData[y][z][x]!=0) {
+
+					let transparency = 255;
 					let relativeWallPos = createVector(boxSize*x,boxSize*y,boxSize*z).sub(user.pos);
 					let wallDot = relativeWallPos.dot(user.cameraAngle);
-					if(wallDot<0 && relativeWallPos.mag() <= boxSize * renderDist)
-					{
-						push();
-						translate(x*boxSize,y*boxSize,z*boxSize);
-						box(boxSize);
-						pop();
-					}
-					else if (wallDot > 0 && relativeWallPos.mag() < boxSize*2)
-					{
-						if(relativeWallPos.mag() < boxSize*1.5){
-							// fill(0,255,242,150);
-							stroke(0, 255, 242,50);
-							strokeWeight(1);
-							push();
-							translate(x*boxSize,y*boxSize,z*boxSize);
-							box(boxSize);
-							pop();
-							fill(0,0,0);
-							stroke(0, 255, 242);
-							strokeWeight(4);
-						} else{
-							fill(0,0,0);
-							stroke(0, 255, 242,50);
-							strokeWeight(4);
-							push();
-							translate(x*boxSize,y*boxSize,z*boxSize);
-							box(boxSize);
-							pop();
-							fill(0,0,0);
-							stroke(0, 255, 242);
-							strokeWeight(4);
-						}
+					let tmpSz = items[mapData[y][z][x]].sz;
+					let tmpColor = items[mapData[y][z][x]].color;
 
+					push();
+					if(wallDot<0 && relativeWallPos.mag() <= boxSize * renderDist){
+						translate(boxSize*x, boxSize*y, boxSize*z);
 					}
+					else if (wallDot > 0 && relativeWallPos.mag() < boxSize*2){
+						translate(tmpSz*x, tmpSz*y, tmpSz*z);
+						if(relativeWallPos.mag() < boxSize*1.0){
+							transparency = 200;
+						}
+					}
+					fill(...tmpColor, transparency);
+					box(tmpSz);
+					pop();
 				}
 			}
 		}
@@ -247,56 +243,18 @@ function drawMap() {
 
 function handleKeyDown(){
 
-	let temp;
-	if (mapData)
-		temp = user.checkWalls();
-	else
-		temp = [];
-
 	if (keyIsDown(LEFT_ARROW)){
-		let allGood = true;
-		for (let t in temp) {
-			if(temp[t][0]==-1 && mapData[user.blockIndex[1]+temp[t][1]][user.blockIndex[2]+temp[t][2]][user.blockIndex[0]+temp[t][0]]){
-				allGood = false;
-			}
-		}
-		if(allGood){
 			user.moveLeft();
-		}
 	}
 	else if (keyIsDown(RIGHT_ARROW)){
-		let allGood = true;
-		for (let t in temp) {
-			if(temp[t][0]==1 && mapData[user.blockIndex[1]+temp[t][1]][user.blockIndex[2]+temp[t][2]][user.blockIndex[0]+temp[t][0]]){
-				allGood = false;
-			}
-		}
-		if(allGood){
 			user.moveRight();
-		}
 	}
 
 	if (keyIsDown(UP_ARROW)){
-		let allGood = true;
-		for (let t in temp) {
-			if(temp[t][2]==-1 && mapData[user.blockIndex[1]+temp[t][1]][user.blockIndex[2]+temp[t][2]][user.blockIndex[0]+temp[t][0]]){
-				allGood = false;
-			}
-		}
-		if(allGood){
 			user.moveForward();
-		}
 	}
 	else if (keyIsDown(DOWN_ARROW)){
-		let allGood = true;
-		for (let t in temp) {
-			if(temp[t][2]==1 && mapData[user.blockIndex[1]+temp[t][1]][user.blockIndex[2]+temp[t][2]][user.blockIndex[0]+temp[t][0]]){
-				allGood = false;
-			}
-		}
-		if(allGood){
 			user.moveBack();
-		}
 	}
 
 	else if (keyIsDown(74)){}	// j
@@ -326,10 +284,29 @@ function handleKeyDown(){
 }
 
 function keyPressed() {
-	if (keyCode == 32)	// <Space>
-		flightEnabled = !flightEnabled;
+	if (keyCode == 32){	// <Space>
+		user.verticalVelocity += user.jumpForce/(user.mass*10);
+	}
+
 	else if (keyCode == 66)	// b
 		disableFlight = !disableFlight;
+}
 
+function sendScore(data) { // ["alek", 100]
+	$.ajax({
+	  	type: "POST",
+ 	 	contentType: "application/json; charset=utf-8",
+  		url: "/leaderboard",
+  		data: JSON.stringify(data),
+  		success: function (data) {
+   			console.log(data);
+   		},
+		dataType: "json"
+	});
+}
 
+function requestScore() {
+	$.get("/leaderboard", function(data){
+		console.log(JSON.parse(data));
+	});
 }
