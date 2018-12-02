@@ -10,6 +10,10 @@
 # Maps
 * Each map level starts with a line of `---`
 * Lines that start with `#` will not be read
+* 0 - empty space
+* 1 - wall
+* 2 - pellet, ghosts can go through
+
 
 # How to Play
 * Arrow keys for horizontal movement
