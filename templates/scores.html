@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<div>
+	<h1>Leaderboard</h1>
+	<div id="scores"></div>
+	<script type="text/javascript">
+		function requestScore() {
+			$.get("/leaderboard", function(data){
+				console.log(data);
+				let temp = JSON.parse(data);
+				let txt = "<ul>";
+				for (var i = 0; i < temp.length; i++){
+					let tmp = $($.parseHTML(temp[i][0]+": "+temp[i][1])).text(); // NO HTML injections
+					txt += "<li>"+tmp+"</li>";
+				}
+				txt += "</ul>";
+				$("#scores").html(txt);
+			});
+		}	
+		requestScore();
+		setInterval(requestScore, 5000);
+	</script>
+</div>
+{% endblock %}
