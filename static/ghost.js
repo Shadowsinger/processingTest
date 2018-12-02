@@ -56,28 +56,67 @@ function identifyTurningPoints(map){
 class Ghost {
   constructor() {
     this.color = createVector(255,255,100)
-    this.pos = createVector(boxSize/2, 0, boxSize/2);
-    this.posIndex = [1,0,1];
+    this.pos = createVector(Math.random*boxSize+boxSize, Math.random*boxSize+boxSize, Math.random*boxSize+boxSize);
+    this.sz = 40
+    this.posIndex = [1,2,1];
+    // this.posIndex[0] = round(this.pos.x/50);
+    // this.posIndex[1] = round(this.pos.y/50);
+    // this.posIndex[2] = round(this.pos.z/50);
+    this.currentHeading = 0;
   }
   render(){
     fill(this.color.x,this.color.y,this.color.z);
     stroke(0, 255, 242,50);
     strokeWeight(1);
     push();
-    translate(this.pos.x,this.pos.y,this.pos.z);
-    sphere(boxSize/2, 8, 8);
+    translate(this.pos.x+boxSize/2,this.pos.y+boxSize/2,this.pos.z+boxSize/2);
+    sphere(this.sz/3, 8, 8);
     pop();
     fill(0,0,0);
     stroke(0, 255, 242);
     strokeWeight(4);
   }
   moveInRandomDir(){
-    let currentHeading;
-    if(pathMap[this.posIndex[0]][this.posIndex[1]][this.posIndex[2]][currentHeading]==0){
-      while (pathMap[this.posIndex[0]][this.posIndex[1]][this.posIndex[2]][currentHeading]==0){
-        currentHeading++;
+    console.log(pathMap[this.posIndex[1]][this.posIndex[2]][this.posIndex[0]]);
+    console.log(this.posIndex);
+    if(pathMap[this.posIndex[1]][this.posIndex[2]][this.posIndex[0]][this.currentHeading]==0){
+      console.log("changing directions")
+      while (pathMap[this.posIndex[1]][this.posIndex[2]][this.posIndex[0]][this.currentHeading]==0){
+        this.currentHeading = floor(Math.random()*6);
+        if(this.currentHeading >=6) {this.currentHeading = 5;}
       }
     }
+    switch (this.currentHeading) {
+      case 0:
+        this.pos.x++;
+      break;
+
+      case 1:
+        this.pos.y--;
+      break;
+
+      case 2:
+        this.pos.x--;
+      break;
+
+      case 3:
+        this.pos.y++;
+      break;
+
+      case 4:
+        this.pos.z--;
+      break;
+
+      case 5:
+        this.pos.z++;
+      break;
+
+      default:
+        // this.pos.x ++;
+      break;
+
+    }
+
   }
 
 }

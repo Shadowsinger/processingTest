@@ -1,10 +1,13 @@
 
 let mapData;
 let user;
+let ghost
 let items;
 var score = 0;
 
 const boxSize = 50;
+
+const ghostNum = 10;
 
 let keyRotation = [0, 0, 0];
 let directionFacing = 0;
@@ -29,17 +32,24 @@ function checkCollide(posA, posB, szA, szB){
 	return (xGood && yGood && zGood);
 }
 
+$.get("getData", function(data){
+	mapData = JSON.parse(data);
+	identifyTurningPoints(mapData);
+});
 
 class User {
 	constructor(){
 		this.sz = 10;
 
-		this.spawnPoint = createVector(boxSize, 0, boxSize);
-		this.blockIndex = [1,0,1];
+		this.spawnPoint = createVector(boxSize*2, boxSize, boxSize*2);
+		this.blockIndex = [2,1,2];
 
 		this.pos = this.spawnPoint;
-		this.cameraAngle = p5.Vector.add(this.spawnPoint,createVector(0,0,-70));
+		this.cameraAngle = p5.Vector.add(this.spawnPoint,createVector(0,-70,-70)).normalize().mult(70);
 
+		this.mass = 1;
+		this.jumpForce = 800;
+		this.verticalVelocity = 0;
 		//150->80 (pos to cam)
 	}
 
@@ -78,49 +88,64 @@ class User {
 	}
 	moveLeft(){
 		this.pos.x-=user.cameraAngle.z/70;
-		this.pos.z+=user.cameraAngle.x/70;
 		if(this.checkWalls()){
 			this.pos.x+=user.cameraAngle.z/70;
+		}
+		this.pos.z+=user.cameraAngle.x/70;
+		if(this.checkWalls()){
 			this.pos.z-=user.cameraAngle.x/70;
 		}
 	}
 	moveRight(){
 		this.pos.x+=user.cameraAngle.z/70;
-		this.pos.z-=user.cameraAngle.x/70;
 		if(this.checkWalls()){
 			this.pos.x-=user.cameraAngle.z/70;
+		}
+		this.pos.z-=user.cameraAngle.x/70;
+		if(this.checkWalls()){
 			this.pos.z+=user.cameraAngle.x/70;
 		}
 	}
 	moveForward(){
 		this.pos.x-=user.cameraAngle.x/70;
-		this.pos.z-=user.cameraAngle.z/70;
 		if(this.checkWalls()){
 			this.pos.x+=user.cameraAngle.x/70;
+		}
+		this.pos.z-=user.cameraAngle.z/70;
+		if(this.checkWalls()){
 			this.pos.z+=user.cameraAngle.z/70;
 		}
 	}
 	moveBack(){
 
 		this.pos.x+=user.cameraAngle.x/70;
-		this.pos.z+=user.cameraAngle.z/70;
 		if(this.checkWalls()){
 			this.pos.x-=user.cameraAngle.x/70;
+		}
+
+		this.pos.z+=user.cameraAngle.z/70;
+		if(this.checkWalls()){
 			this.pos.z-=user.cameraAngle.z/70;
 		}
 	}
-	moveUp(){
-		this.pos.y--;
+	moveUp(v){
+		this.pos.y-=v;
+		if(this.checkWalls()){
+			this.pos.y+=v;
+			this.verticalVelocity=0;
+		}
 	}
-	moveDown(){
-		this.pos.y++;
+	moveDown(v){
+		this.pos.y+=v;
+		if (this.checkWalls()){
+			this.pos.y-=v;
+			this.verticalVelocity=0;
+		}
 	}
 
 }
 
-$.get("getData", function(data){
-	mapData = JSON.parse(data);
-});
+
 
 $.get("getItemData", function(data){
 	items = JSON.parse(data);
@@ -128,6 +153,10 @@ $.get("getItemData", function(data){
 
 function initVars() {
 	user = new User();
+	for (var i = 0; i < ghostNum; i++) {
+		ghost = new Ghost();
+	}
+
 }
 
 function setup() {
@@ -161,13 +190,21 @@ function draw() {
 	}
 	if (!disableFlight && mapData){
 		if (flightEnabled)
-			user.moveUp();
+			user.moveUp(1);
 		else
-			user.moveDown();
+			user.moveDown(1);
 	}
+
+	// let prevUserYPos = user.pos.y
+	user.verticalVelocity -= 10/30;
+	user.moveUp(user.verticalVelocity/60);
+
+	// user.verticalVelocity =user.pos.y - prevUserYPos;
 
 
 	user.render();
+	ghost.render();
+	ghost.moveInRandomDir();
 	handleKeyDown();
 	pop();
 
@@ -185,7 +222,7 @@ function drawMap() {
 				if (mapData[y][z][x]!=0) {
 					let relativeWallPos = createVector(boxSize*x,boxSize*y,boxSize*z).sub(user.pos);
 					let wallDot = relativeWallPos.dot(user.cameraAngle);
-					
+
 					let s = items[mapData[y][z][x]].sz;
 					let c = items[mapData[y][z][x]].color;
 					if(wallDot<0 && relativeWallPos.mag() <= boxSize * renderDist)
@@ -201,10 +238,12 @@ function drawMap() {
 						if(relativeWallPos.mag() < boxSize*1.0){
 							push();
 							translate(s*x, s*y, s*z);
+							strokeWeight(1);
 							fill(c[0], c[1], c[2], 200);
 							box(s);
+							strokeWeight(4);
 							pop();
-						} 
+						}
 						else{
 							push();
 							translate(s*x, s*y, s*z);
@@ -265,8 +304,12 @@ function handleKeyDown(){
 }
 
 function keyPressed() {
-	if (keyCode == 32)	// <Space>
-		flightEnabled = !flightEnabled;
+	if (keyCode == 32){	// <Space>
+
+		user.verticalVelocity += user.jumpForce/(user.mass*10);
+
+	}
+
 	else if (keyCode == 66)	// b
 		disableFlight = !disableFlight;
 
@@ -291,5 +334,3 @@ function requestScore() {
 		console.log(JSON.parse(data));
 	});
 }
-
-

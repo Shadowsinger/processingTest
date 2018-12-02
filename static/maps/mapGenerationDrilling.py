@@ -11,7 +11,7 @@ def drillPath(l=6,directions=[1,2]):
 		pos[idx] = (pos[idx]+1)%n
 		x[pos[0],pos[1],pos[2]] = 0
 
-for i in range(5):
+for i in range(30):
 	drillPath(l=random.randint(4,7),directions=random.choice([[0,2],[0,1],[1,2]]))
 
 # pad it back up
@@ -20,9 +20,9 @@ for i in range(1,n+1):
 	for j in range(1,n+1):
 		for k in range(1,n+1):
 			y[i][j][k] = x[i-1][j-1][k-1]
-for j in range(1,n+1):
-    for k in range(1,n+1):
-        y[0][j][k] = 0
+# for j in range(1,n+1):
+#     for k in range(1,n+1):
+#         y[0][j][k] = 0
 
 
 print(x)
