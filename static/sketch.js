@@ -49,45 +49,37 @@ class User {
 		// else
 		//   console.log("CHANGE");
 		// this.blockIndex = [floor(this.pos.x/50), floor(this.pos.y/50), floor(this.pos.z/50)];
-		this.blockIndex = [floor(this.pos.x/50+0.5), floor(this.pos.y/50+0.5), floor(this.pos.z/50+0.5)];
+		// this.blockIndex = [floor(this.pos.x/50+0.5), floor(this.pos.y/50+0.5), floor(this.pos.z/50+0.5)];
 	}
 
 	checkWalls(){
-		// what direction is it hitting a wall in? 0-none, 1-"right", -1-"left"
-		let dirs = [0,0,0];
-		let tpos = this.pos.array();
+		this.locationIndex = p5.Vector.div(this.pos, boxSize);
+		this.locationFine = this.locationIndex.copy();
 
-		// x, y, z
-		for (var d = 0; d < 3; d++)
-		{
-			if (tpos[d]-this.sz/2<(this.blockIndex[d]-0.5)*boxSize)
-				dirs[d] = -1;
-			else if(tpos[d]+this.sz/2>(this.blockIndex[d]+0.5)*boxSize)
-				dirs[d] = 1;
+		this.locationFine.x = this.locationFine.x % 1;
+		// this.locationFine.y = this.locationFine.y % 1;
+		this.locationFine.y = 0;
+		this.locationFine.z = this.locationFine.z % 1;
+
+		this.locationIndex.x = round(this.locationIndex.x);
+		this.locationIndex.y = round(this.locationIndex.y);
+		this.locationIndex.z = round(this.locationIndex.z);
+		console.log(this.locationIndex);
+
+		let leeway;
+		leeway = 1 - ((this.sz/boxSize)/2);
+		console.log(this.locationFine)
+		if(mapData[this.locationIndex.y][this.locationIndex.z][this.locationIndex.x]==1){
+			console.log("fully in block" + this.locationIndex);
+			return true;
+		// } else if (this.locationFine.x>=leeway||this.locationFine.x<=1-leeway||this.locationFine.x>=leeway||this.locationFine.x<=1-leeway){
+			// if(){
+				// console.log("partially in block " + this.locationIndex);
+				// return true;
+			// }
+		} else {
+			return false;
 		}
-
-		let allIndices = [];
-
-		// console.log(dirs);
-		for(var i = 0; i < 2; i++){
-			if (dirs[0] == 0 && i == 0)
-				continue;
-			let tmpI = this.blockIndex[0]+dirs[0]*i;
-			for(var j = 0; j < 2; j++){
-				if (dirs[1] == 0 && j == 0)
-					continue;
-				let tmpJ = this.blockIndex[1]+dirs[1]*j;
-				for(var k = 0; k < 2; k++){
-					if (dirs[2] == 0 && k == 0)
-						continue;
-					let tmpK = this.blockIndex[2]+dirs[2]*k;
-					if(mapData[tmpJ][tmpK][tmpI]){
-						allIndices.push([dirs[0]*i, dirs[1]*j, dirs[2]*k]);
-					}
-				}
-			}
-		}
-		return allIndices;
 
 	}
 
@@ -109,18 +101,35 @@ class User {
 	moveLeft(){
 		this.pos.x-=user.cameraAngle.z/70;
 		this.pos.z+=user.cameraAngle.x/70;
+		if(this.checkWalls()){
+			this.pos.x+=user.cameraAngle.z/70;
+			this.pos.z-=user.cameraAngle.x/70;
+		}
 	}
 	moveRight(){
 		this.pos.x+=user.cameraAngle.z/70;
 		this.pos.z-=user.cameraAngle.x/70;
+		if(this.checkWalls()){
+			this.pos.x-=user.cameraAngle.z/70;
+			this.pos.z+=user.cameraAngle.x/70;
+		}
 	}
 	moveForward(){
 		this.pos.x-=user.cameraAngle.x/70;
 		this.pos.z-=user.cameraAngle.z/70;
+		if(this.checkWalls()){
+			this.pos.x+=user.cameraAngle.x/70;
+			this.pos.z+=user.cameraAngle.z/70;
+		}
 	}
 	moveBack(){
+
 		this.pos.x+=user.cameraAngle.x/70;
 		this.pos.z+=user.cameraAngle.z/70;
+		if(this.checkWalls()){
+			this.pos.x-=user.cameraAngle.x/70;
+			this.pos.z-=user.cameraAngle.z/70;
+		}
 	}
 	moveUp(){
 		this.pos.y--;
@@ -144,17 +153,6 @@ function setup() {
 	createCanvas(500,500,WEBGL);
 	initVars();
 	updateCamera();
-}
-
-function decideCameraPos() {
-	// if (directionFacing%4 == 0)
-	// 	user.cameraAngle = createVector(0,0,70);
-	// else if (directionFacing%4 == 1)
-	// 	user.cameraAngle = createVector(70,0,0);
-	// else if (directionFacing%4 == 2)
-	// 	user.cameraAngle = createVector(0,0,-70);
-	// else if (directionFacing%4 == 3)
-	// 	user.cameraAngle = createVector(-70,0,0);
 }
 
 function updateCamera() {
@@ -188,7 +186,6 @@ function draw() {
 
 	user.render();
 	handleKeyDown();
-	decideCameraPos();
 	pop();
 
 	updateCamera();
@@ -247,56 +244,20 @@ function drawMap() {
 
 function handleKeyDown(){
 
-	let temp;
-	if (mapData)
-		temp = user.checkWalls();
-	else
-		temp = [];
+
 
 	if (keyIsDown(LEFT_ARROW)){
-		let allGood = true;
-		for (let t in temp) {
-			if(temp[t][0]==-1 && mapData[user.blockIndex[1]+temp[t][1]][user.blockIndex[2]+temp[t][2]][user.blockIndex[0]+temp[t][0]]){
-				allGood = false;
-			}
-		}
-		if(allGood){
 			user.moveLeft();
-		}
 	}
 	else if (keyIsDown(RIGHT_ARROW)){
-		let allGood = true;
-		for (let t in temp) {
-			if(temp[t][0]==1 && mapData[user.blockIndex[1]+temp[t][1]][user.blockIndex[2]+temp[t][2]][user.blockIndex[0]+temp[t][0]]){
-				allGood = false;
-			}
-		}
-		if(allGood){
 			user.moveRight();
-		}
 	}
 
 	if (keyIsDown(UP_ARROW)){
-		let allGood = true;
-		for (let t in temp) {
-			if(temp[t][2]==-1 && mapData[user.blockIndex[1]+temp[t][1]][user.blockIndex[2]+temp[t][2]][user.blockIndex[0]+temp[t][0]]){
-				allGood = false;
-			}
-		}
-		if(allGood){
 			user.moveForward();
-		}
 	}
 	else if (keyIsDown(DOWN_ARROW)){
-		let allGood = true;
-		for (let t in temp) {
-			if(temp[t][2]==1 && mapData[user.blockIndex[1]+temp[t][1]][user.blockIndex[2]+temp[t][2]][user.blockIndex[0]+temp[t][0]]){
-				allGood = false;
-			}
-		}
-		if(allGood){
 			user.moveBack();
-		}
 	}
 
 	else if (keyIsDown(74)){}	// j
