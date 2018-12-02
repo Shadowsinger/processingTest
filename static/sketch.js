@@ -1,6 +1,8 @@
 
 let mapData;
 let user;
+let items;
+var score = 0;
 
 const boxSize = 50;
 
@@ -42,44 +44,20 @@ class User {
 	}
 
 	updateBlockIndex(){
-		// let temp = [floor(this.pos.x/50), floor(this.pos.y/50), floor(this.pos.z/50)]
-		// if(this.blockIndex[0] == temp[0] && this.blockIndex[1] == temp[1] && this.blockIndex[2] == temp[2]){
-		//   console.log("");
-		// }
-		// else
-		//   console.log("CHANGE");
-		// this.blockIndex = [floor(this.pos.x/50), floor(this.pos.y/50), floor(this.pos.z/50)];
-		// this.blockIndex = [floor(this.pos.x/50+0.5), floor(this.pos.y/50+0.5), floor(this.pos.z/50+0.5)];
+		this.blockIndex = [round(this.pos.x/50), round(this.pos.y/50), round(this.pos.z/50)];
 	}
 
 	checkWalls(){
 		this.locationIndex = p5.Vector.div(this.pos, boxSize);
-		this.locationFine = this.locationIndex.copy();
-
-		this.locationFine.x = this.locationFine.x % 1;
-		// this.locationFine.y = this.locationFine.y % 1;
-		this.locationFine.y = 0;
-		this.locationFine.z = this.locationFine.z % 1;
 
 		this.locationIndex.x = round(this.locationIndex.x);
 		this.locationIndex.y = round(this.locationIndex.y);
 		this.locationIndex.z = round(this.locationIndex.z);
-		console.log(this.locationIndex);
-
-		let leeway;
-		leeway = 1 - ((this.sz/boxSize)/2);
-		console.log(this.locationFine)
-		if(mapData[this.locationIndex.y][this.locationIndex.z][this.locationIndex.x]==1){
-			console.log("fully in block" + this.locationIndex);
-			return true;
-		// } else if (this.locationFine.x>=leeway||this.locationFine.x<=1-leeway||this.locationFine.x>=leeway||this.locationFine.x<=1-leeway){
-			// if(){
-				// console.log("partially in block " + this.locationIndex);
-				// return true;
-			// }
-		} else {
-			return false;
+		if(mapData[this.locationIndex.y][this.locationIndex.z][this.locationIndex.x] == 9){
+			score++;
+			mapData[this.locationIndex.y][this.locationIndex.z][this.locationIndex.x] = 0;
 		}
+		return mapData[this.locationIndex.y][this.locationIndex.z][this.locationIndex.x] == 1;
 
 	}
 
@@ -144,12 +122,16 @@ $.get("getData", function(data){
 	mapData = JSON.parse(data);
 });
 
+$.get("getItemData", function(data){
+	items = JSON.parse(data);
+});
+
 function initVars() {
 	user = new User();
 }
 
 function setup() {
-	img = loadImage('/static/alek.png');
+	img = loadImage("/static/img/alek.png");
 	createCanvas(500,500,WEBGL);
 	initVars();
 	updateCamera();
@@ -167,11 +149,12 @@ function draw() {
 		background(200,200,200);
 	fill(200,200,200);
 
+	if (!mapData)
+		return;
+
 	push();
-	if (mapData){
-		drawMap();
-		user.updateBlockIndex();
-	}
+	drawMap();
+	user.updateBlockIndex();
 
 	if (!disableAutoMove){
 		user.moveForward();
@@ -199,40 +182,35 @@ function drawMap() {
 	for (var y = 0; y < mapData.length; y++) {
 		for (var z = 0; z < mapData.length; z++) {
 			for (var x = 0; x < mapData.length; x++) {
-				if (mapData[y][z][x]) {
+				if (mapData[y][z][x]!=0) {
 					let relativeWallPos = createVector(boxSize*x,boxSize*y,boxSize*z).sub(user.pos);
 					let wallDot = relativeWallPos.dot(user.cameraAngle);
+					
+					let s = items[mapData[y][z][x]].sz;
+					let c = items[mapData[y][z][x]].color;
 					if(wallDot<0 && relativeWallPos.mag() <= boxSize * renderDist)
 					{
 						push();
-						translate(x*boxSize,y*boxSize,z*boxSize);
-						box(boxSize);
+						translate(boxSize*x, boxSize*y, boxSize*z);
+						fill(c[0], c[1], c[2]);
+						box(s);
 						pop();
 					}
 					else if (wallDot > 0 && relativeWallPos.mag() < boxSize*2)
 					{
-						if(relativeWallPos.mag() < boxSize*1.5){
-							// fill(0,255,242,150);
-							stroke(0, 255, 242,50);
-							strokeWeight(1);
+						if(relativeWallPos.mag() < boxSize*1.0){
 							push();
-							translate(x*boxSize,y*boxSize,z*boxSize);
-							box(boxSize);
+							translate(s*x, s*y, s*z);
+							fill(c[0], c[1], c[2], 200);
+							box(s);
 							pop();
-							fill(0,0,0);
-							stroke(0, 255, 242);
-							strokeWeight(4);
-						} else{
-							fill(0,0,0);
-							stroke(0, 255, 242,50);
-							strokeWeight(4);
+						} 
+						else{
 							push();
-							translate(x*boxSize,y*boxSize,z*boxSize);
-							box(boxSize);
+							translate(s*x, s*y, s*z);
+							fill(...c);
+							box(s);
 							pop();
-							fill(0,0,0);
-							stroke(0, 255, 242);
-							strokeWeight(4);
 						}
 
 					}
@@ -294,3 +272,24 @@ function keyPressed() {
 
 
 }
+
+function sendScore(data) { // ["alek", 100]
+	$.ajax({
+	  	type: "POST",
+ 	 	contentType: "application/json; charset=utf-8",
+  		url: "/leaderboard",
+  		data: JSON.stringify(data),
+  		success: function (data) {
+   			console.log(data);
+   		},
+		dataType: "json"
+	});
+}
+
+function requestScore() {
+	$.get("/leaderboard", function(data){
+		console.log(JSON.parse(data));
+	});
+}
+
+
