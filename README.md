@@ -26,13 +26,11 @@
 * Flight
 * Rooms/stages that use the mapGeneration
 * Collect keys
-
 * Scoreboard
-* Dr. Strange-style portals
 
+* Dr. Strange-style portals
 * Main character gravity, wall interaction
 * Ghost algorithms
-* Walking on walls
 
 # LINKS & NOTES
 * [Camera perspectives (outdated but still helpful)](https://processing.org/reference/camera_.html)

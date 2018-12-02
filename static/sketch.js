@@ -222,8 +222,6 @@ function drawMap() {
 
 function handleKeyDown(){
 
-
-
 	if (keyIsDown(LEFT_ARROW)){
 			user.moveLeft();
 	}
@@ -269,8 +267,6 @@ function keyPressed() {
 		flightEnabled = !flightEnabled;
 	else if (keyCode == 66)	// b
 		disableFlight = !disableFlight;
-
-
 }
 
 function sendScore(data) { // ["alek", 100]
