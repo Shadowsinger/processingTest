@@ -24,7 +24,6 @@ function checkCollide(posA, posB, szA, szB){
 	let xGood = max(posA.x-szA/2, posB.x-szB/2) > min(posA.x+szA/2, posA.x+szB/2);
 	let yGood = max(posA.y-szA/2, posB.y-szB/2) > min(posA.y+szA/2, posA.y+szB/2);
 	let zGood = max(posA.z-szA/2, posB.z-szB/2) > min(posA.z+szA/2, posA.z+szB/2);
-	console.log(xGood + yGood + zGood);
 	return (xGood && yGood && zGood);
 }
 
@@ -42,6 +41,17 @@ class User {
 		//150->80 (pos to cam)
 	}
 
+	updateBlockIndex(){
+		// let temp = [floor(this.pos.x/50), floor(this.pos.y/50), floor(this.pos.z/50)]
+		// if(this.blockIndex[0] == temp[0] && this.blockIndex[1] == temp[1] && this.blockIndex[2] == temp[2]){
+		//   console.log("");
+		// }
+		// else
+		//   console.log("CHANGE");
+		// this.blockIndex = [floor(this.pos.x/50), floor(this.pos.y/50), floor(this.pos.z/50)];
+		this.blockIndex = [floor(this.pos.x/50+0.5), floor(this.pos.y/50+0.5), floor(this.pos.z/50+0.5)];
+	}
+
 	checkWalls(){
 		// what direction is it hitting a wall in? 0-none, 1-"right", -1-"left"
 		let dirs = [0,0,0];
@@ -56,17 +66,29 @@ class User {
 				dirs[d] = 1;
 		}
 
-		for(var i = 0; i < 2; i++){
-			for(var j = 0; j < 2; j++){
-				for(var k = 0; k < 2; k++){
-					if(mapData[this.blockIndex[0] + dirs[i]*i][this.blockIndex[1] + dirs[j]*j][this.blockIndex[2] + dirs[k]*k]){
-						console.log("dnd");
-					}
+		let allIndices = [];
 
+		// console.log(dirs);
+		for(var i = 0; i < 2; i++){
+			if (dirs[0] == 0 && i == 0)
+				continue;
+			let tmpI = this.blockIndex[0]+dirs[0]*i;
+			for(var j = 0; j < 2; j++){
+				if (dirs[1] == 0 && j == 0)
+					continue;
+				let tmpJ = this.blockIndex[1]+dirs[1]*j;
+				for(var k = 0; k < 2; k++){
+					if (dirs[2] == 0 && k == 0)
+						continue;
+					let tmpK = this.blockIndex[2]+dirs[2]*k;
+					if(mapData[tmpJ][tmpK][tmpI]){
+						allIndices.push([dirs[0]*i, dirs[1]*j, dirs[2]*k]);
+					}
 				}
 			}
 		}
-		console.log(dirs);
+		return allIndices;
+
 	}
 
 	render(){
@@ -80,7 +102,7 @@ class User {
 		stroke(0,0,255);
 		fill(0,255,0);
 		strokeWeight(1);
-		texture(img);
+		// texture(img);
 		box(this.sz);
 		pop();
 	}
@@ -118,7 +140,7 @@ function initVars() {
 }
 
 function setup() {
-	img = loadImage('static/alek.png');
+	img = loadImage('/static/alek.png');
 	createCanvas(500,500,WEBGL);
 	initVars();
 	updateCamera();
@@ -150,6 +172,7 @@ function draw() {
 	push();
 	if (mapData){
 		drawMap();
+		user.updateBlockIndex();
 	}
 
 	if (!disableAutoMove){
@@ -223,14 +246,58 @@ function drawMap() {
 }
 
 function handleKeyDown(){
-	if (keyIsDown(LEFT_ARROW))
-		user.moveLeft();
-	else if (keyIsDown(RIGHT_ARROW))
-		user.moveRight();
-	if (keyIsDown(UP_ARROW))
-		user.moveForward();
-	else if (keyIsDown(DOWN_ARROW))
-		user.moveBack();
+
+	let temp;
+	if (mapData)
+		temp = user.checkWalls();
+	else
+		temp = [];
+
+	if (keyIsDown(LEFT_ARROW)){
+		let allGood = true;
+		for (let t in temp) {
+			if(temp[t][0]==-1 && mapData[user.blockIndex[1]+temp[t][1]][user.blockIndex[2]+temp[t][2]][user.blockIndex[0]+temp[t][0]]){
+				allGood = false;
+			}
+		}
+		if(allGood){
+			user.moveLeft();
+		}
+	}
+	else if (keyIsDown(RIGHT_ARROW)){
+		let allGood = true;
+		for (let t in temp) {
+			if(temp[t][0]==1 && mapData[user.blockIndex[1]+temp[t][1]][user.blockIndex[2]+temp[t][2]][user.blockIndex[0]+temp[t][0]]){
+				allGood = false;
+			}
+		}
+		if(allGood){
+			user.moveRight();
+		}
+	}
+
+	if (keyIsDown(UP_ARROW)){
+		let allGood = true;
+		for (let t in temp) {
+			if(temp[t][2]==-1 && mapData[user.blockIndex[1]+temp[t][1]][user.blockIndex[2]+temp[t][2]][user.blockIndex[0]+temp[t][0]]){
+				allGood = false;
+			}
+		}
+		if(allGood){
+			user.moveForward();
+		}
+	}
+	else if (keyIsDown(DOWN_ARROW)){
+		let allGood = true;
+		for (let t in temp) {
+			if(temp[t][2]==1 && mapData[user.blockIndex[1]+temp[t][1]][user.blockIndex[2]+temp[t][2]][user.blockIndex[0]+temp[t][0]]){
+				allGood = false;
+			}
+		}
+		if(allGood){
+			user.moveBack();
+		}
+	}
 
 	else if (keyIsDown(74)){}	// j
 		// keyRotation[0]-=0.01;
