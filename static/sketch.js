@@ -55,6 +55,7 @@ class User {
 		this.locationIndex.z = round(this.locationIndex.z);
 		if(mapData[this.locationIndex.y][this.locationIndex.z][this.locationIndex.x] == 9){
 			score++;
+			$("#score").html(score);
 			mapData[this.locationIndex.y][this.locationIndex.z][this.locationIndex.x] = 0;
 		}
 		return mapData[this.locationIndex.y][this.locationIndex.z][this.locationIndex.x] == 1;

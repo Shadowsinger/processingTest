@@ -30,6 +30,7 @@
 
 * Dr. Strange-style portals
 * Main character gravity, wall interaction
+* Minimaps
 * Ghost algorithms
 
 # LINKS & NOTES

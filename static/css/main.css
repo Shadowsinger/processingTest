@@ -1,0 +1,24 @@
+
+@font-face {
+  font-family: 'Kongtext';
+  src: url('font/kongtext.ttf')  format('truetype');
+}
+
+*{
+	background-color: #26292D;
+	color: #00FFF2;
+}
+
+.leaderboardBtn{
+	float: right;
+}
+
+.buttonContainer{
+	margin: 5%;
+}
+
+.scoreContainer{
+	width: 20%;
+}
+
+
