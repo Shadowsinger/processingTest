@@ -1,22 +1,24 @@
 
 let mapData;
 let user;
-let img;
 
-let flightEnabled = 0;
-let directionFacing = 0;
+const boxSize = 50;
+
 let keyRotation = [0, 0, 0];
+let directionFacing = 0;
+let flightEnabled = 0;		// This is for checking whether gravity works or not.
+													//For activation, use disableFlight
 
 // Admin stuff, will remove
 let disableFlight = 1;
 let disableAutoMove = 1;
 
-const boxSize = 50;
-const fovDist = 70;
 const renderDist = 6;
 const rotationAngleIncrement = Math.PI/96;
 const sRotationAngleIncrement = Math.sin(rotationAngleIncrement);
 const cRotationAngleIncrement = Math.cos(rotationAngleIncrement);
+
+let img;
 
 function checkCollide(posA, posB, szA, szB){
 	let xGood = max(posA.x-szA/2, posB.x-szB/2) > min(posA.x+szA/2, posA.x+szB/2);
@@ -25,52 +27,60 @@ function checkCollide(posA, posB, szA, szB){
 	return (xGood && yGood && zGood);
 }
 
+
 class User {
 	constructor(){
 		this.sz = 10;
+
 		this.spawnPoint = createVector(boxSize, 0, boxSize);
+		this.blockIndex = [1,0,1];
+
 		this.pos = this.spawnPoint;
-		this.blockIndex = [1, 0, 1];
-		this.cameraAngle = p5.Vector.add(this.spawnPoint, createVector(0, 0, -fovDist));
+		this.cameraAngle = p5.Vector.add(this.spawnPoint,createVector(0,0,-70));
+
+		//150->80 (pos to cam)
 	}
 
 	updateBlockIndex(){
-		this.blockIndex = [floor(this.pos.x/50+0.5), floor(this.pos.y/50+0.5), floor(this.pos.z/50+0.5)];
+		// let temp = [floor(this.pos.x/50), floor(this.pos.y/50), floor(this.pos.z/50)]
+		// if(this.blockIndex[0] == temp[0] && this.blockIndex[1] == temp[1] && this.blockIndex[2] == temp[2]){
+		//   console.log("");
+		// }
+		// else
+		//   console.log("CHANGE");
+		// this.blockIndex = [floor(this.pos.x/50), floor(this.pos.y/50), floor(this.pos.z/50)];
+		// this.blockIndex = [floor(this.pos.x/50+0.5), floor(this.pos.y/50+0.5), floor(this.pos.z/50+0.5)];
 	}
 
 	checkWalls(){
-		// Direction hitting a wall in
-		// 0: None, 1: Right, -1: Left
-		let dirs = [0,0,0];
-		let tpos = this.pos.array();
-		let allIndices = [];
+		this.locationIndex = p5.Vector.div(this.pos, boxSize);
+		this.locationFine = this.locationIndex.copy();
 
-		// x, y, z
-		for (var axis = 0; axis < 3; axis++){
-			if (tpos[axis]-this.sz/2<(this.blockIndex[axis]-0.5)*boxSize)
-				dirs[axis] = -1;
-			else if(tpos[axis]+this.sz/2>(this.blockIndex[axis]+0.5)*boxSize)
-				dirs[axis] = 1;
+		this.locationFine.x = this.locationFine.x % 1;
+		// this.locationFine.y = this.locationFine.y % 1;
+		this.locationFine.y = 0;
+		this.locationFine.z = this.locationFine.z % 1;
+
+		this.locationIndex.x = round(this.locationIndex.x);
+		this.locationIndex.y = round(this.locationIndex.y);
+		this.locationIndex.z = round(this.locationIndex.z);
+		console.log(this.locationIndex);
+
+		let leeway;
+		leeway = 1 - ((this.sz/boxSize)/2);
+		console.log(this.locationFine)
+		if(mapData[this.locationIndex.y][this.locationIndex.z][this.locationIndex.x]==1){
+			console.log("fully in block" + this.locationIndex);
+			return true;
+		// } else if (this.locationFine.x>=leeway||this.locationFine.x<=1-leeway||this.locationFine.x>=leeway||this.locationFine.x<=1-leeway){
+			// if(){
+				// console.log("partially in block " + this.locationIndex);
+				// return true;
+			// }
+		} else {
+			return false;
 		}
 
-		for(var i = 0; i < 2; i++){
-			if (!dirs[0] && !i) continue;
-			let tmpI = this.blockIndex[0]+dirs[0]*i;
-			for(var j = 0; j < 2; j++){
-				if (!dirs[1] && !j) continue;
-				let tmpJ = this.blockIndex[1]+dirs[1]*j;
-				for(var k = 0; k < 2; k++){
-					if (!dirs[2] && !k) continue;
-					let tmpK = this.blockIndex[2]+dirs[2]*k;
-
-					if(mapData[tmpJ][tmpK][tmpI]){
-						allIndices.push([dirs[0]*i, dirs[1]*j, dirs[2]*k]);
-					}
-
-				}
-			}
-		}
-		return allIndices;
 	}
 
 	render(){
@@ -88,22 +98,38 @@ class User {
 		box(this.sz);
 		pop();
 	}
-
 	moveLeft(){
-		this.pos.x-=user.cameraAngle.z/fovDist;
-		this.pos.z+=user.cameraAngle.x/fovDist;
+		this.pos.x-=user.cameraAngle.z/70;
+		this.pos.z+=user.cameraAngle.x/70;
+		if(this.checkWalls()){
+			this.pos.x+=user.cameraAngle.z/70;
+			this.pos.z-=user.cameraAngle.x/70;
+		}
 	}
 	moveRight(){
-		this.pos.x+=user.cameraAngle.z/fovDist;
-		this.pos.z-=user.cameraAngle.x/fovDist;
+		this.pos.x+=user.cameraAngle.z/70;
+		this.pos.z-=user.cameraAngle.x/70;
+		if(this.checkWalls()){
+			this.pos.x-=user.cameraAngle.z/70;
+			this.pos.z+=user.cameraAngle.x/70;
+		}
 	}
 	moveForward(){
-		this.pos.x-=user.cameraAngle.x/fovDist;
-		this.pos.z-=user.cameraAngle.z/fovDist;
+		this.pos.x-=user.cameraAngle.x/70;
+		this.pos.z-=user.cameraAngle.z/70;
+		if(this.checkWalls()){
+			this.pos.x+=user.cameraAngle.x/70;
+			this.pos.z+=user.cameraAngle.z/70;
+		}
 	}
 	moveBack(){
-		this.pos.x+=user.cameraAngle.x/fovDist;
-		this.pos.z+=user.cameraAngle.z/fovDist;
+
+		this.pos.x+=user.cameraAngle.x/70;
+		this.pos.z+=user.cameraAngle.z/70;
+		if(this.checkWalls()){
+			this.pos.x-=user.cameraAngle.x/70;
+			this.pos.z-=user.cameraAngle.z/70;
+		}
 	}
 	moveUp(){
 		this.pos.y--;
@@ -123,7 +149,7 @@ function initVars() {
 }
 
 function setup() {
-	img = loadImage('/static/img/alek.png');
+	img = loadImage('/static/alek.png');
 	createCanvas(500,500,WEBGL);
 	initVars();
 	updateCamera();
@@ -131,14 +157,10 @@ function setup() {
 
 function updateCamera() {
 	let cameraPos = p5.Vector.add(user.cameraAngle, user.pos);
-	camera(...cameraPos.array(), ...user.pos.array(), 0, 1, 0);
+	camera(cameraPos.x, cameraPos.y, cameraPos.z, user.pos.x, user.pos.y, user.pos.z, 0, 1, 0);
 }
 
 function draw() {
-
-	if (!mapData)
-		return;
-
 	if (flightEnabled)
 		background(0,255,0);
 	else
@@ -146,37 +168,29 @@ function draw() {
 	fill(200,200,200);
 
 	push();
+	if (mapData){
 		drawMap();
 		user.updateBlockIndex();
+	}
 
-		if (!disableAutoMove){
-			user.moveForward();
-		}
-		if (!disableFlight && mapData){
-			if (flightEnabled)
-				user.moveUp();
-			else
-				user.moveDown();
-		}
+	if (!disableAutoMove){
+		user.moveForward();
+	}
+	if (!disableFlight && mapData){
+		if (flightEnabled)
+			user.moveUp();
+		else
+			user.moveDown();
+	}
 
-		decideCameraPos();
-		user.render();
-		handleKeyDown();
+
+	user.render();
+	handleKeyDown();
 	pop();
 
 	updateCamera();
 }
 
-function decideCameraPos() {
-	if (directionFacing%4 == 0)
-		user.cameraAngle = createVector(0,0,fovDist);
-	else if (directionFacing%4 == 1)
-		user.cameraAngle = createVector(fovDist,0,0);
-	else if (directionFacing%4 == 2)
-		user.cameraAngle = createVector(0,0,-fovDist);
-	else if (directionFacing%4 == 3)
-		user.cameraAngle = createVector(-fovDist,0,0);
-}
 
 function drawMap() {
 	fill(0,0,0);
@@ -228,30 +242,23 @@ function drawMap() {
 	}
 }
 
-function checkIfBlockPathValid(blocks, sign, axis){
-	// Axis goes in x, y, z
-	function getNewBlockIndex(axis){
-		return user.blockIndex[axis]+blocks[t][axis];
-	}
-	for (var t in blocks) {
-		if(blocks[t][axis]==sign && mapData[getNewBlockIndex(1)][getNewBlockIndex(2)][getNewBlockIndex(0)]){
-			return false;
-		}
-	}
-	return true;
-}
-
 function handleKeyDown(){
 
-	let possibleBlockIntersects = (mapData) ? user.checkWalls() : [];
-	if (keyIsDown(LEFT_ARROW) && checkIfBlockPathValid(possibleBlockIntersects, -1, 0))
-		user.moveLeft();
-	else if (keyIsDown(RIGHT_ARROW) && checkIfBlockPathValid(possibleBlockIntersects, 1, 0))
-		user.moveRight();
-	if (keyIsDown(UP_ARROW) && checkIfBlockPathValid(possibleBlockIntersects, -1, 2))
-		user.moveForward();
-	else if (keyIsDown(DOWN_ARROW) && checkIfBlockPathValid(possibleBlockIntersects, 1, 2))
-		user.moveBack();
+
+
+	if (keyIsDown(LEFT_ARROW)){
+			user.moveLeft();
+	}
+	else if (keyIsDown(RIGHT_ARROW)){
+			user.moveRight();
+	}
+
+	if (keyIsDown(UP_ARROW)){
+			user.moveForward();
+	}
+	else if (keyIsDown(DOWN_ARROW)){
+			user.moveBack();
+	}
 
 	else if (keyIsDown(74)){}	// j
 		// keyRotation[0]-=0.01;
@@ -267,21 +274,23 @@ function handleKeyDown(){
 		keyRotation[2]+=0.01;
 
 	if (keyIsDown(68)){		// d
+		// directionFacing++;
 		user.cameraAngle.x = ((user.cameraAngle.x * cRotationAngleIncrement) - (user.cameraAngle.z * sRotationAngleIncrement));
 		user.cameraAngle.z = ((user.cameraAngle.x * sRotationAngleIncrement) + (user.cameraAngle.z * cRotationAngleIncrement));
-		user.cameraAngle.normalize().mult(fovDist);
+		user.cameraAngle.normalize().mult(70);
 	}
 	else if (keyIsDown(65)){	// a
 		user.cameraAngle.x = ((user.cameraAngle.x * cRotationAngleIncrement) + (user.cameraAngle.z * sRotationAngleIncrement));
 		user.cameraAngle.z = ((user.cameraAngle.z * cRotationAngleIncrement) - (user.cameraAngle.x * sRotationAngleIncrement));
-		user.cameraAngle.normalize().mult(fovDist);
+		user.cameraAngle.normalize().mult(70);
 	}
 }
 
 function keyPressed() {
-	if (keyCode == 32)								// <Space>
+	if (keyCode == 32)	// <Space>
 		flightEnabled = !flightEnabled;
-	else if (keyCode == 66)						// b
+	else if (keyCode == 66)	// b
 		disableFlight = !disableFlight;
-}
 
+
+}
