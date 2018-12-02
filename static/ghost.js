@@ -59,9 +59,7 @@ class Ghost {
     this.pos = createVector(Math.random*boxSize+boxSize, Math.random*boxSize+boxSize, Math.random*boxSize+boxSize);
     this.sz = 40
     this.posIndex = [1,2,1];
-    // this.posIndex[0] = round(this.pos.x/50);
-    // this.posIndex[1] = round(this.pos.y/50);
-    // this.posIndex[2] = round(this.pos.z/50);
+
     this.currentHeading = 0;
   }
   render(){
@@ -116,7 +114,9 @@ class Ghost {
       break;
 
     }
-
+    this.posIndex[0] = round(this.pos.x/50);
+    this.posIndex[1] = round(this.pos.y/50);
+    this.posIndex[2] = round(this.pos.z/50);
   }
 
 }

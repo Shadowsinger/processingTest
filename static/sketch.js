@@ -154,7 +154,7 @@ $.get("getItemData", function(data){
 
 function initVars() {
 	user = new User();
-	for (var i = 0; i < ghostNum; i++) {
+	for (var i = 0; i < ghostNum ; i++) {
 		ghost = new Ghost();
 	}
 
@@ -225,46 +225,18 @@ function drawMap() {
 					let transparency = 255;
 					let relativeWallPos = createVector(boxSize*x,boxSize*y,boxSize*z).sub(user.pos);
 					let wallDot = relativeWallPos.dot(user.cameraAngle);
-<<<<<<< HEAD
-
-					let s = items[mapData[y][z][x]].sz;
-					let c = items[mapData[y][z][x]].color;
-					if(wallDot<0 && relativeWallPos.mag() <= boxSize * renderDist)
-					{
-						push();
-=======
 					let tmpSz = items[mapData[y][z][x]].sz;
 					let tmpColor = items[mapData[y][z][x]].color;
 
 					push();
 					if(wallDot<0 && relativeWallPos.mag() <= boxSize * renderDist){
->>>>>>> 40a8b8423677b7c3f2c691786b0086c59fa37275
 						translate(boxSize*x, boxSize*y, boxSize*z);
 					}
 					else if (wallDot > 0 && relativeWallPos.mag() < boxSize*2){
 						translate(tmpSz*x, tmpSz*y, tmpSz*z);
 						if(relativeWallPos.mag() < boxSize*1.0){
-<<<<<<< HEAD
-							push();
-							translate(s*x, s*y, s*z);
-							strokeWeight(1);
-							fill(c[0], c[1], c[2], 200);
-							box(s);
-							strokeWeight(4);
-							pop();
-						}
-						else{
-							push();
-							translate(s*x, s*y, s*z);
-							fill(...c);
-							box(s);
-							pop();
-						}
-
-=======
 							transparency = 200;
-						} 
->>>>>>> 40a8b8423677b7c3f2c691786b0086c59fa37275
+						}
 					}
 					fill(...tmpColor, transparency);
 					box(tmpSz);
