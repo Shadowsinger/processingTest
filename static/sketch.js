@@ -1,24 +1,22 @@
 
 let mapData;
 let user;
+let img;
 
-const boxSize = 50;
-
-let keyRotation = [0, 0, 0];
+let flightEnabled = 0;
 let directionFacing = 0;
-let flightEnabled = 0;		// This is for checking whether gravity works or not.
-													//For activation, use disableFlight
+let keyRotation = [0, 0, 0];
 
 // Admin stuff, will remove
 let disableFlight = 1;
 let disableAutoMove = 1;
 
+const boxSize = 50;
+const fovDist = 70;
 const renderDist = 6;
 const rotationAngleIncrement = Math.PI/96;
 const sRotationAngleIncrement = Math.sin(rotationAngleIncrement);
 const cRotationAngleIncrement = Math.cos(rotationAngleIncrement);
-
-let img;
 
 function checkCollide(posA, posB, szA, szB){
 	let xGood = max(posA.x-szA/2, posB.x-szB/2) > min(posA.x+szA/2, posA.x+szB/2);
@@ -27,68 +25,52 @@ function checkCollide(posA, posB, szA, szB){
 	return (xGood && yGood && zGood);
 }
 
-
 class User {
 	constructor(){
 		this.sz = 10;
-
 		this.spawnPoint = createVector(boxSize, 0, boxSize);
-		this.blockIndex = [1,0,1];
-
 		this.pos = this.spawnPoint;
-		this.cameraAngle = p5.Vector.add(this.spawnPoint,createVector(0,0,-70));
-
-		//150->80 (pos to cam)
+		this.blockIndex = [1, 0, 1];
+		this.cameraAngle = p5.Vector.add(this.spawnPoint, createVector(0, 0, -fovDist));
 	}
 
 	updateBlockIndex(){
-		// let temp = [floor(this.pos.x/50), floor(this.pos.y/50), floor(this.pos.z/50)]
-		// if(this.blockIndex[0] == temp[0] && this.blockIndex[1] == temp[1] && this.blockIndex[2] == temp[2]){
-		//   console.log("");
-		// }
-		// else
-		//   console.log("CHANGE");
-		// this.blockIndex = [floor(this.pos.x/50), floor(this.pos.y/50), floor(this.pos.z/50)];
 		this.blockIndex = [floor(this.pos.x/50+0.5), floor(this.pos.y/50+0.5), floor(this.pos.z/50+0.5)];
 	}
 
 	checkWalls(){
-		// what direction is it hitting a wall in? 0-none, 1-"right", -1-"left"
+		// Direction hitting a wall in
+		// 0: None, 1: Right, -1: Left
 		let dirs = [0,0,0];
 		let tpos = this.pos.array();
-
-		// x, y, z
-		for (var d = 0; d < 3; d++)
-		{
-			if (tpos[d]-this.sz/2<(this.blockIndex[d]-0.5)*boxSize)
-				dirs[d] = -1;
-			else if(tpos[d]+this.sz/2>(this.blockIndex[d]+0.5)*boxSize)
-				dirs[d] = 1;
-		}
-
 		let allIndices = [];
 
-		// console.log(dirs);
+		// x, y, z
+		for (var axis = 0; axis < 3; axis++){
+			if (tpos[axis]-this.sz/2<(this.blockIndex[axis]-0.5)*boxSize)
+				dirs[axis] = -1;
+			else if(tpos[axis]+this.sz/2>(this.blockIndex[axis]+0.5)*boxSize)
+				dirs[axis] = 1;
+		}
+
 		for(var i = 0; i < 2; i++){
-			if (dirs[0] == 0 && i == 0)
-				continue;
+			if (!dirs[0] && !i) continue;
 			let tmpI = this.blockIndex[0]+dirs[0]*i;
 			for(var j = 0; j < 2; j++){
-				if (dirs[1] == 0 && j == 0)
-					continue;
+				if (!dirs[1] && !j) continue;
 				let tmpJ = this.blockIndex[1]+dirs[1]*j;
 				for(var k = 0; k < 2; k++){
-					if (dirs[2] == 0 && k == 0)
-						continue;
+					if (!dirs[2] && !k) continue;
 					let tmpK = this.blockIndex[2]+dirs[2]*k;
+
 					if(mapData[tmpJ][tmpK][tmpI]){
 						allIndices.push([dirs[0]*i, dirs[1]*j, dirs[2]*k]);
 					}
+
 				}
 			}
 		}
 		return allIndices;
-
 	}
 
 	render(){
@@ -106,21 +88,22 @@ class User {
 		box(this.sz);
 		pop();
 	}
+
 	moveLeft(){
-		this.pos.x-=user.cameraAngle.z/70;
-		this.pos.z+=user.cameraAngle.x/70;
+		this.pos.x-=user.cameraAngle.z/fovDist;
+		this.pos.z+=user.cameraAngle.x/fovDist;
 	}
 	moveRight(){
-		this.pos.x+=user.cameraAngle.z/70;
-		this.pos.z-=user.cameraAngle.x/70;
+		this.pos.x+=user.cameraAngle.z/fovDist;
+		this.pos.z-=user.cameraAngle.x/fovDist;
 	}
 	moveForward(){
-		this.pos.x-=user.cameraAngle.x/70;
-		this.pos.z-=user.cameraAngle.z/70;
+		this.pos.x-=user.cameraAngle.x/fovDist;
+		this.pos.z-=user.cameraAngle.z/fovDist;
 	}
 	moveBack(){
-		this.pos.x+=user.cameraAngle.x/70;
-		this.pos.z+=user.cameraAngle.z/70;
+		this.pos.x+=user.cameraAngle.x/fovDist;
+		this.pos.z+=user.cameraAngle.z/fovDist;
 	}
 	moveUp(){
 		this.pos.y--;
@@ -140,29 +123,22 @@ function initVars() {
 }
 
 function setup() {
-	img = loadImage('/static/alek.png');
+	img = loadImage('/static/img/alek.png');
 	createCanvas(500,500,WEBGL);
 	initVars();
 	updateCamera();
 }
 
-function decideCameraPos() {
-	// if (directionFacing%4 == 0)
-	// 	user.cameraAngle = createVector(0,0,70);
-	// else if (directionFacing%4 == 1)
-	// 	user.cameraAngle = createVector(70,0,0);
-	// else if (directionFacing%4 == 2)
-	// 	user.cameraAngle = createVector(0,0,-70);
-	// else if (directionFacing%4 == 3)
-	// 	user.cameraAngle = createVector(-70,0,0);
-}
-
 function updateCamera() {
 	let cameraPos = p5.Vector.add(user.cameraAngle, user.pos);
-	camera(cameraPos.x, cameraPos.y, cameraPos.z, user.pos.x, user.pos.y, user.pos.z, 0, 1, 0);
+	camera(...cameraPos.array(), ...user.pos.array(), 0, 1, 0);
 }
 
 function draw() {
+
+	if (!mapData)
+		return;
+
 	if (flightEnabled)
 		background(0,255,0);
 	else
@@ -170,30 +146,37 @@ function draw() {
 	fill(200,200,200);
 
 	push();
-	if (mapData){
 		drawMap();
 		user.updateBlockIndex();
-	}
 
-	if (!disableAutoMove){
-		user.moveForward();
-	}
-	if (!disableFlight && mapData){
-		if (flightEnabled)
-			user.moveUp();
-		else
-			user.moveDown();
-	}
+		if (!disableAutoMove){
+			user.moveForward();
+		}
+		if (!disableFlight && mapData){
+			if (flightEnabled)
+				user.moveUp();
+			else
+				user.moveDown();
+		}
 
-
-	user.render();
-	handleKeyDown();
-	decideCameraPos();
+		decideCameraPos();
+		user.render();
+		handleKeyDown();
 	pop();
 
 	updateCamera();
 }
 
+function decideCameraPos() {
+	if (directionFacing%4 == 0)
+		user.cameraAngle = createVector(0,0,fovDist);
+	else if (directionFacing%4 == 1)
+		user.cameraAngle = createVector(fovDist,0,0);
+	else if (directionFacing%4 == 2)
+		user.cameraAngle = createVector(0,0,-fovDist);
+	else if (directionFacing%4 == 3)
+		user.cameraAngle = createVector(-fovDist,0,0);
+}
 
 function drawMap() {
 	fill(0,0,0);
@@ -245,59 +228,30 @@ function drawMap() {
 	}
 }
 
+function checkIfBlockPathValid(blocks, sign, axis){
+	// Axis goes in x, y, z
+	function getNewBlockIndex(axis){
+		return user.blockIndex[axis]+blocks[t][axis];
+	}
+	for (var t in blocks) {
+		if(blocks[t][axis]==sign && mapData[getNewBlockIndex(1)][getNewBlockIndex(2)][getNewBlockIndex(0)]){
+			return false;
+		}
+	}
+	return true;
+}
+
 function handleKeyDown(){
 
-	let temp;
-	if (mapData)
-		temp = user.checkWalls();
-	else
-		temp = [];
-
-	if (keyIsDown(LEFT_ARROW)){
-		let allGood = true;
-		for (let t in temp) {
-			if(temp[t][0]==-1 && mapData[user.blockIndex[1]+temp[t][1]][user.blockIndex[2]+temp[t][2]][user.blockIndex[0]+temp[t][0]]){
-				allGood = false;
-			}
-		}
-		if(allGood){
-			user.moveLeft();
-		}
-	}
-	else if (keyIsDown(RIGHT_ARROW)){
-		let allGood = true;
-		for (let t in temp) {
-			if(temp[t][0]==1 && mapData[user.blockIndex[1]+temp[t][1]][user.blockIndex[2]+temp[t][2]][user.blockIndex[0]+temp[t][0]]){
-				allGood = false;
-			}
-		}
-		if(allGood){
-			user.moveRight();
-		}
-	}
-
-	if (keyIsDown(UP_ARROW)){
-		let allGood = true;
-		for (let t in temp) {
-			if(temp[t][2]==-1 && mapData[user.blockIndex[1]+temp[t][1]][user.blockIndex[2]+temp[t][2]][user.blockIndex[0]+temp[t][0]]){
-				allGood = false;
-			}
-		}
-		if(allGood){
-			user.moveForward();
-		}
-	}
-	else if (keyIsDown(DOWN_ARROW)){
-		let allGood = true;
-		for (let t in temp) {
-			if(temp[t][2]==1 && mapData[user.blockIndex[1]+temp[t][1]][user.blockIndex[2]+temp[t][2]][user.blockIndex[0]+temp[t][0]]){
-				allGood = false;
-			}
-		}
-		if(allGood){
-			user.moveBack();
-		}
-	}
+	let possibleBlockIntersects = (mapData) ? user.checkWalls() : [];
+	if (keyIsDown(LEFT_ARROW) && checkIfBlockPathValid(possibleBlockIntersects, -1, 0))
+		user.moveLeft();
+	else if (keyIsDown(RIGHT_ARROW) && checkIfBlockPathValid(possibleBlockIntersects, 1, 0))
+		user.moveRight();
+	if (keyIsDown(UP_ARROW) && checkIfBlockPathValid(possibleBlockIntersects, -1, 2))
+		user.moveForward();
+	else if (keyIsDown(DOWN_ARROW) && checkIfBlockPathValid(possibleBlockIntersects, 1, 2))
+		user.moveBack();
 
 	else if (keyIsDown(74)){}	// j
 		// keyRotation[0]-=0.01;
@@ -313,23 +267,21 @@ function handleKeyDown(){
 		keyRotation[2]+=0.01;
 
 	if (keyIsDown(68)){		// d
-		// directionFacing++;
 		user.cameraAngle.x = ((user.cameraAngle.x * cRotationAngleIncrement) - (user.cameraAngle.z * sRotationAngleIncrement));
 		user.cameraAngle.z = ((user.cameraAngle.x * sRotationAngleIncrement) + (user.cameraAngle.z * cRotationAngleIncrement));
-		user.cameraAngle.normalize().mult(70);
+		user.cameraAngle.normalize().mult(fovDist);
 	}
 	else if (keyIsDown(65)){	// a
 		user.cameraAngle.x = ((user.cameraAngle.x * cRotationAngleIncrement) + (user.cameraAngle.z * sRotationAngleIncrement));
 		user.cameraAngle.z = ((user.cameraAngle.z * cRotationAngleIncrement) - (user.cameraAngle.x * sRotationAngleIncrement));
-		user.cameraAngle.normalize().mult(70);
+		user.cameraAngle.normalize().mult(fovDist);
 	}
 }
 
 function keyPressed() {
-	if (keyCode == 32)	// <Space>
+	if (keyCode == 32)								// <Space>
 		flightEnabled = !flightEnabled;
-	else if (keyCode == 66)	// b
+	else if (keyCode == 66)						// b
 		disableFlight = !disableFlight;
-
-
 }
+
