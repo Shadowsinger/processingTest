@@ -9,6 +9,11 @@
 		"description": "test",
 		"sz": 50
 	},
+	"8": {
+		"color": [0,203,0],
+		"description": "points",
+		"sz": 50
+	},
 	"9": {
 		"color": [255,0,0],
 		"description": "test",

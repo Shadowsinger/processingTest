@@ -42,10 +42,9 @@ function identifyTurningPoints(mapData){
     }
   }
 }
-// identifyTurningPoints(mapData);
 
 class Ghost {
-  constructor() {
+  constructor(posIdx) {
     this.color = createVector(255,255,100)
     // this.pos = createVector(random()*boxSize+boxSize, random()*boxSize+boxSize, random()*boxSize+boxSize);
     this.pos = createVector(2*boxSize, 1*boxSize, 2*boxSize);

@@ -1,18 +1,32 @@
 
+/*
+IMPORTNANT
+
+
+blockIndex: xyz
+user.pos: xyz
+allIndices: xyz
+
+mapData: yzx
+*/
+
+
 let mapData;
 let user;
-let ghost;
+let ghosts=[];
 let items;
 var score = 0;
 
 const boxSize = 50;
 
-const ghostNum = 10;
+const ghostNum = 1;
 
 let keyRotation = [0, 0, 0];
 let directionFacing = 0;
 let flightEnabled = 0;		// This is for checking whether gravity works or not.
 													//For activation, use disableFlight
+
+let strangePortals = [];
 
 // Admin stuff, will remove
 let disableFlight = 1;
@@ -35,6 +49,17 @@ function checkCollide(posA, posB, szA, szB){
 $.get("getData", function(data){
 	mapData = JSON.parse(data);
 	identifyTurningPoints(mapData);
+
+	for (var i = 0; i < mapData.length; i++) {
+		for (var j = 0; j < mapData[i].length; j++) {
+			for (var k = 0; k < mapData[i][j].length; k++) {
+				if (mapData[i][j][k]==8){
+					strangePortals.push([i,j,k]);
+				}
+			}
+		}
+	}
+
 });
 
 class User {
@@ -68,6 +93,12 @@ class User {
 				score++;
 				$("#score").html(score);
 				mapData[this.locationIndex.y][this.locationIndex.z][this.locationIndex.x] = 0;
+			}
+			if(mapData[this.locationIndex.y][this.locationIndex.z][this.locationIndex.x] == 8){
+				let newIdx = floor(random()*strangePortals.length);
+				// this.blockIndex = strangePortals[newIdx];
+				this.blockIndex = [1,0,1];
+				this.pos = createVector(this.blockIndex[0]*boxSize, this.blockIndex[1]*boxSize, this.blockIndex[2]*boxSize);
 			}
 			return mapData[this.locationIndex.y][this.locationIndex.z][this.locationIndex.x] == 1;
 		}
@@ -155,11 +186,13 @@ $.get("getItemData", function(data){
 
 function initVars() {
 	user = new User();
-	ghost = new Ghost();
+	for (var i = 0; i < ghostNum; i++) {
+		ghosts.push(new Ghost);
+	}
 }
 
 function setup() {
-	img = loadImage("/static/img/dog1.png");
+	img = loadImage("/static/img/alek.png");
 	createCanvas(500,500,WEBGL);
 	initVars();
 	updateCamera();
@@ -198,8 +231,10 @@ function draw() {
 	user.moveUp(user.verticalVelocity/60);
 
 	user.render();
-	ghost.render();
-	ghost.moveInRandomDir();
+	for (var i = 0; i < ghostNum; i++) {
+		ghosts[i].render();
+		ghosts[i].moveInRandomDir();
+	}
 	handleKeyDown();
 	pop();
 
