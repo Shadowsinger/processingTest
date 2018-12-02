@@ -13,7 +13,11 @@ let flightEnabled = 0;		// This is for checking whether gravity works or not.
 let disableFlight = 1;
 let disableAutoMove = 1;
 
-const renderDist = 4;
+const renderDist = 6;
+const rotationAngleIncrement = Math.PI/96;
+const sRotationAngleIncrement = Math.sin(rotationAngleIncrement);
+const cRotationAngleIncrement = Math.cos(rotationAngleIncrement);
+
 let img;
 
 function checkCollide(posA, posB, szA, szB){
@@ -81,44 +85,20 @@ class User {
 		pop();
 	}
 	moveLeft(){
-		if (directionFacing%4 == 0)
-			this.pos.x -= 1;
-		else if (directionFacing%4 == 1)
-			this.pos.z += 1;
-		else if (directionFacing%4 == 2)
-			this.pos.x += 1;
-		else if (directionFacing%4 == 3)
-			this.pos.z -= 1;
+		this.pos.x-=user.cameraAngle.z/70;
+		this.pos.z+=user.cameraAngle.x/70;
 	}
 	moveRight(){
-		if (directionFacing%4 == 0)
-			this.pos.x += 1;
-		else if (directionFacing%4 == 1)
-			this.pos.z -= 1;
-		else if (directionFacing%4 == 2)
-			this.pos.x -= 1;
-		else if (directionFacing%4 == 3)
-			this.pos.z += 1;
+		this.pos.x+=user.cameraAngle.z/70;
+		this.pos.z-=user.cameraAngle.x/70;
 	}
 	moveForward(){
-		if (directionFacing%4 == 0)
-			this.pos.z -= 1;
-		else if (directionFacing%4 == 1)
-			this.pos.x -= 1;
-		else if (directionFacing%4 == 2)
-			this.pos.z += 1;
-		else if (directionFacing%4 == 3)
-			this.pos.x += 1;
+		this.pos.x-=user.cameraAngle.x/70;
+		this.pos.z-=user.cameraAngle.z/70;
 	}
 	moveBack(){
-		if (directionFacing%4 == 0)
-			this.pos.z += 1;
-		else if (directionFacing%4 == 1)
-			this.pos.x += 1;
-		else if (directionFacing%4 == 2)
-			this.pos.z -= 1;
-		else if (directionFacing%4 == 3)
-			this.pos.x -= 1;
+		this.pos.x+=user.cameraAngle.x/70;
+		this.pos.z+=user.cameraAngle.z/70;
 	}
 	moveUp(){
 		this.pos.y--;
@@ -145,14 +125,14 @@ function setup() {
 }
 
 function decideCameraPos() {
-	if (directionFacing%4 == 0)
-		user.cameraAngle = createVector(0,0,70);
-	else if (directionFacing%4 == 1)
-		user.cameraAngle = createVector(70,0,0);
-	else if (directionFacing%4 == 2)
-		user.cameraAngle = createVector(0,0,-70);
-	else if (directionFacing%4 == 3)
-		user.cameraAngle = createVector(-70,0,0);
+	// if (directionFacing%4 == 0)
+	// 	user.cameraAngle = createVector(0,0,70);
+	// else if (directionFacing%4 == 1)
+	// 	user.cameraAngle = createVector(70,0,0);
+	// else if (directionFacing%4 == 2)
+	// 	user.cameraAngle = createVector(0,0,-70);
+	// else if (directionFacing%4 == 3)
+	// 	user.cameraAngle = createVector(-70,0,0);
 }
 
 function updateCamera() {
@@ -202,7 +182,7 @@ function drawMap() {
 				if (mapData[y][z][x]) {
 					let relativeWallPos = createVector(boxSize*x,boxSize*y,boxSize*z).sub(user.pos);
 					let wallDot = relativeWallPos.dot(user.cameraAngle);
-					if(wallDot<0 && relativeWallPos.mag() < boxSize * renderDist)
+					if(wallDot<0 && relativeWallPos.mag() <= boxSize * renderDist)
 					{
 						push();
 						translate(x*boxSize,y*boxSize,z*boxSize);
@@ -211,10 +191,10 @@ function drawMap() {
 					}
 					else if (wallDot > 0 && relativeWallPos.mag() < boxSize*2)
 					{
-						if(relativeWallPos.mag() < boxSize){
-							// fill(255,0,0,150);
+						if(relativeWallPos.mag() < boxSize*1.5){
+							// fill(0,255,242,150);
 							stroke(0, 255, 242,50);
-							strokeWeight(4);
+							strokeWeight(1);
 							push();
 							translate(x*boxSize,y*boxSize,z*boxSize);
 							box(boxSize);
@@ -252,26 +232,34 @@ function handleKeyDown(){
 	else if (keyIsDown(DOWN_ARROW))
 		user.moveBack();
 
-	else if (keyIsDown(74))	// j
-		keyRotation[0]-=0.01;
-	else if (keyIsDown(76))	// l
-		keyRotation[0]+=0.01;
-	else if (keyIsDown(75))	// k
-		keyRotation[1]-=0.01;
-	else if (keyIsDown(73))	// i
-		keyRotation[1]+=0.01;
+	else if (keyIsDown(74)){}	// j
+		// keyRotation[0]-=0.01;
+	else if (keyIsDown(76)){}	// l
+		//keyRotation[0]+=0.01;
+	else if (keyIsDown(75)){}	// k
+		// keyRotation[1]-=0.01;
+	else if (keyIsDown(73)){}	// i
+		// keyRotation[1]+=0.01;
 	else if (keyIsDown(85))	// u
 		keyRotation[2]-=0.01;
 	else if (keyIsDown(79))	// o
 		keyRotation[2]+=0.01;
+
+	if (keyIsDown(68)){		// d
+		// directionFacing++;
+		user.cameraAngle.x = ((user.cameraAngle.x * cRotationAngleIncrement) - (user.cameraAngle.z * sRotationAngleIncrement));
+		user.cameraAngle.z = ((user.cameraAngle.x * sRotationAngleIncrement) + (user.cameraAngle.z * cRotationAngleIncrement));
+		user.cameraAngle.normalize().mult(70);
+	}
+	else if (keyIsDown(65)){	// a
+		user.cameraAngle.x = ((user.cameraAngle.x * cRotationAngleIncrement) + (user.cameraAngle.z * sRotationAngleIncrement));
+		user.cameraAngle.z = ((user.cameraAngle.z * cRotationAngleIncrement) - (user.cameraAngle.x * sRotationAngleIncrement));
+		user.cameraAngle.normalize().mult(70);
+	}
 }
 
 function keyPressed() {
-	if (keyCode === 65)		// a
-		directionFacing++;
-	else if (keyCode == 68)	// d
-		directionFacing+=3;
-	else if (keyCode == 32)	// <Space>
+	if (keyCode == 32)	// <Space>
 		flightEnabled = !flightEnabled;
 	else if (keyCode == 66)	// b
 		disableFlight = !disableFlight;
